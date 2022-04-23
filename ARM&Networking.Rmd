@@ -1,0 +1,293 @@
+---
+title: "revised_csbs_arm"
+author: "Zehui Wu"
+date: '2022-04-14'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(stringr) 
+library(dplyr)
+#install.packages("arules")
+library(arules)
+#install.packages("arulesViz")
+library(arulesViz)
+#install.packages("arulesViz")
+library(plotly)
+library(dplyr)
+library(visNetwork)
+#install.packages("visNetwork")
+library(igraph)
+library(ggplot2)
+library(tidyverse)
+#install.packages("networkD3")
+library(networkD3)
+
+```
+
+
+```{r}
+getwd() 
+setwd("/Users/wuzehui/Desktop/csbs/decision_tree") 
+data <- read.csv("revised_csbs.csv") 
+head(data) 
+data<-na.omit(data) ## get rid of NA values
+
+str(data) 
+data$currentapprovalamount <- as.integer(data$currentapprovalamount)
+data$forgivenessamount<- as.integer(data$forgivenessamount) 
+```
+
+
+```{r}
+max(data$employees_rate) ## 0.4846416
+max(data$approval_rate) ## 0.4644379
+max(data$forgiveness_rate) ## 0.4663083
+#format(data,scientific=F) 
+## separate different columns --> job reported & forgivenessamount & currentapprovalamount
+data['employees_rate']<- cut(data$employees_rate,breaks=c(0,0.1,0.2,0.3,0.4,0.5))
+
+data['approval_rate']<-cut(data$approval_rate,breaks=c(0,0.1,0.2,0.3,0.4,0.5))
+
+data['forgiveness_rate']<-cut(data$forgiveness_rate,breaks=c(0,0.1,0.2,0.3,0.4,0.5))
+
+
+#update columns to make sense:
+data['employees_rate']<-str_c('job_rate:',data$employees_rate)
+data['forgiveness_rate']<-str_c('forgiveness_rate:',data$forgiveness_rate)
+data['approval_rate']<-str_c('approval_rate:',data$approval_rate)
+
+data['borrowerstate']<-str_c('Borrower_S:',data$borrowerstate) 
+data['originatinglendercity']<-str_c('Lender_C:',data$originatinglendercity) 
+data['originatinglenderstate']<-str_c('Lender_S:',data$originatinglenderstate)
+data['originatinglender'] <- str_c('Lender:',data$originatinglender)
+
+##    
+#get rid of extra column:
+data<-select(data,-c("X","cert","loannumber","originatinglenderlocationid","dateapproved","borrowername","naicscode","borrowercity","currentapprovalamount","X._of_employees","forgivenessamount","originatinglendercity"))
+
+nrow(data) ## 68589 rows
+
+## write it to txt dataset: 
+write.table(data,'revised_csbs_loan.txt',col.names=FALSE, row.names=FALSE) 
+
+```
+
+
+
+```{r}
+## to do arm analysis: 
+
+#text transactions to basket data
+csbs<-read.transactions(
+  "revised_csbs_loan.txt",
+  format="basket",
+  header= FALSE,
+  sep=" ",
+  rm.duplicates = TRUE
+)
+inspect(csbs)
+
+
+```
+
+```{r}
+
+#then: create the rules
+csbs_rules = arules::apriori(csbs, 
+                                   parameter = list(support=0.08, conf=0.6, minlen=2,target="rules"))
+inspect(csbs_rules)
+
+```
+
+
+```{r}
+##sort by support,confidence,lift:
+csbs_rules.sup<-sort(csbs_rules,by='support')
+rule.sup<- csbs_rules.sup[1:15,]
+csbs.sup.frame<-inspect(csbs_rules.sup[1:15])[,c(1,2,3,4,5,7)] #support
+
+csbs_rules.cof<-sort(csbs_rules,by='confidence')
+rule.cof<- csbs_rules.cof[1:15,]  
+csbs.sup.frame<-inspect(csbs_rules.cof[1:15])[,c(1,2,3,4,5,7)] #confidence
+
+
+csbs_rules.lift<-sort(csbs_rules,by='lift')
+rule.lift<- csbs_rules.lift[1:15,]  #lift
+
+write.csv(DATAFRAME(head(csbs_rules,by="support",n=15)),"csbs_support_top15.csv")
+write.csv(DATAFRAME(head(csbs_rules,by="confidence",n=15)),"csbs_confidence_top15.csv")
+write.csv(DATAFRAME(head(csbs_rules,by="lift",n=15,decreasing=TRUE)),"csbs_lift_top15.csv")
+```
+
+```{r}
+
+########  Using NetworkD3 To View Results   ###########
+
+DATAFRAME(head(csbs_rules,by="support",n=15))
+DATAFRAME(head(csbs_rules,by="confidence",n=15))
+DATAFRAME(head(csbs_rules,by="lift",n=15)) 
+
+ggplot(DATAFRAME(head(csbs_rules,by="support",n=15)))+geom_point(aes(x=support,y=confidence,size=lift),shape=21,fill='yellow',color='black')+labs(title='The Top 15 CSBS_Support Rules')
+
+ggplot(DATAFRAME(head(csbs_rules,by="confidence",n=15)))+geom_point(aes(x=support,y=confidence,size=lift),shape=21,fill='green',color='black')+labs(title='The Top 15 CSBS_Confidence Rules')
+
+ggplot(DATAFRAME(head(csbs_rules,by="lift",n=15)))+geom_point(aes(x=support,y=confidence,size=lift),shape=21,fill='pink',color='black')+labs(title='The Top 15 CSBS_Lift Rules')
+
+
+```
+
+
+```{r}
+
+### D3 visulizations:
+###### Do for SUp, Conf, and Lift   #######
+
+## USING SUP
+Rules_S<-DATAFRAME(head(csbs_rules,by="support",n=15))[c(1,2,3)]
+names(Rules_S) <- c("SourceName", "TargetName", "Weight")
+head(Rules_S,15)
+
+## USING CONF
+Rules_C<-DATAFRAME(head(csbs_rules,by="confidence",n=15))[c(1,2,4)]
+names(Rules_C) <- c("SourceName", "TargetName", "Weight")
+head(Rules_C,15)
+
+## USING LIFT
+Rules_L<-DATAFRAME(head(csbs_rules,by="lift",n=15))[c(1,2,6)]
+names(Rules_L) <- c("SourceName", "TargetName", "Weight")
+head(Rules_L,15)
+
+## Choose and set: 轮流
+#Rules<-Rules_S
+Rules<-Rules_C ## reset to confidence rule
+#Rules<-Rules_L
+
+```
+
+
+
+
+```{r}
+#############       Build a NetworkD3 edgeList and nodeList    ############
+## for support & confidence & lift: need to reset the former definition of "Rules<-Rules_L" to fit corresponding models.
+edgeList<-Rules
+# Create a graph. Use simplyfy to ensure that there are no duplicated edges or self loops
+MyGraph <- igraph::simplify(igraph::graph.data.frame(edgeList, directed=TRUE))
+plot(MyGraph)
+
+nodeList <- data.frame(ID = c(0:(igraph::vcount(MyGraph) - 1)), 
+                       # because networkD3 library requires IDs to start at 0
+                       nName = igraph::V(MyGraph)$name)
+## Node Degree
+(nodeList <- cbind(nodeList, nodeDegree=igraph::degree(MyGraph, 
+                                                       v = igraph::V(MyGraph), mode = "all")))
+
+## Betweenness
+BetweenNess <- igraph::betweenness(MyGraph, 
+                                   v = igraph::V(MyGraph), 
+                                   directed = TRUE) 
+
+(nodeList <- cbind(nodeList, nodeBetweenness=BetweenNess))
+
+## This can change the BetweenNess value if needed
+#BetweenNess<-BetweenNess/100
+
+```
+```{r}
+
+########## BUILD THE EDGES #####################################################
+## for support & confidence & lift: need to reset the former definition of "Rules<-Rules_S" & "Rules<-Rules_L" to fit corresponding models.
+getNodeID <- function(x){
+  which(x == igraph::V(MyGraph)$name) - 1  #IDs start at 0
+}
+## UPDATE THIS !! depending on # choice
+(getNodeID("Category")) 
+
+edgeList <- plyr::ddply(
+  Rules, .variables = c("SourceName", "TargetName" , "Weight"), 
+  function (x) data.frame(SourceID = getNodeID(x$SourceName), 
+                          TargetID = getNodeID(x$TargetName)))
+
+head(edgeList)
+nrow(edgeList)
+##############  Dice Sim ################################################
+DiceSim <- igraph::similarity.dice(MyGraph, vids = igraph::V(MyGraph), mode = "all")
+head(DiceSim)
+F1 <- function(x) {data.frame(diceSim = DiceSim[x$SourceID +1, x$TargetID + 1])}
+
+head(edgeList)
+edgeList <- plyr::ddply(edgeList,
+                        .variables=c("SourceName", "TargetName", "Weight", 
+                                     "SourceID", "TargetID"), 
+                        function(x) data.frame(F1(x)))
+head(edgeList)
+
+```
+
+```{r}
+##################   color #################################################
+
+D3_network_Tweets <- networkD3::forceNetwork(
+  Links = edgeList, # data frame that contains info about edges
+  Nodes = nodeList, # data frame that contains info about nodes
+  Source = "SourceID", # ID of source node 
+  Target = "TargetID", # ID of target node
+  Value = "Weight", # value from the edge list (data frame) that will be used to value/weight relationship amongst nodes
+  NodeID = "nName", # value from the node list (data frame) that contains node description we want to use (e.g., node name)
+  Nodesize = "nodeBetweenness",  # value from the node list (data frame) that contains value we want to use for a node size
+  Group = "nodeDegree",  # value from the node list (data frame) that contains value we want to use for node color
+  height = 700, # Size of the plot (vertical)
+  width = 900,  # Size of the plot (horizontal)
+  fontSize = 20, # Font size
+  linkDistance = networkD3::JS("function(d) { return d.value*1000; }"), # Function to determine distance between any two nodes, uses variables already defined in forceNetwork function (not variables from a data frame)
+  linkWidth = networkD3::JS("function(d) { return d.value*5; }"),# Function to determine link/edge thickness, uses variables already defined in forceNetwork function (not variables from a data frame)
+  opacity = 5, # opacity
+  zoom = TRUE, # ability to zoom when click on the node
+  opacityNoHover = 5, # opacity of labels when static
+  linkColour = "red"   ###"edges_col"red"# edge colors
+) 
+
+networkD3::saveNetwork(D3_network_Tweets, 
+                       "Revised_NetD3_CSBS_Confidence.html", selfcontained = TRUE)
+
+
+
+```
+
+
+```{r}
+
+######## for plot
+#support 
+subrules <- head(rule.sup, n = 15,by='support')
+p <- plot(subrules, method = "graph",  engine = "htmlwidget")
+p
+htmlwidgets::saveWidget(as_widget(p), "Revised_Support_Web_network_TOP15.html")
+#print("finished")
+
+p2 <- plot(subrules, engine = "plotly")
+htmlwidgets::saveWidget(as_widget(p2), "Revised_Support_Scatter_network_TOP15.html")
+
+
+#confidence:
+subrules <- head(rule.cof, n = 15,by='confidence')
+p_cof <- plot(subrules, method = "graph",engine = "htmlwidget")
+htmlwidgets::saveWidget(as_widget(p_cof), "Revised_Confidence_Web_network_TOP15.html")
+print("finished")
+
+p2 <- plot(subrules, engine = "plotly")
+htmlwidgets::saveWidget(as_widget(p2), "Revised_Confidence_Scatter_network_TOP15.html")
+
+#lift:
+subrules <- head(rule.lift, n = 15,by='lift')
+p_lift <- plot(subrules, method = "graph",engine = "htmlwidget")
+htmlwidgets::saveWidget(as_widget(p_lift), "Revised_Lift_Web_network_TOP15.html")
+print("finished")
+
+p2 <- plot(subrules, engine = "plotly")
+htmlwidgets::saveWidget(as_widget(p2), "Revised_Lift_Scatter_network_TOP15.html")
+
+#finished
+
+```

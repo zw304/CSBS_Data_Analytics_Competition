@@ -1,0 +1,205 @@
+---
+title: "decision_tree"
+author: "Zehui Wu"
+date: '2022-04-15'
+output: html_document
+---
+
+```{r}
+library(rpart)
+library(rattle)
+library(RColorBrewer)
+library(rpart.plot)
+library(datasets)
+library(tidyverse)
+library(dplyr)
+library(tibble)
+library(reshape2)
+library(ggplot2)
+#install.packages("caret")
+library(caret) #feature importance 
+library(gt)
+library(kableExtra) ## used for creating fancy table
+```
+
+
+```{r}
+options(scipen=999) ## scientific method = false
+getwd() 
+DF<-read.csv("revised_csbs.csv") 
+head(DF) 
+str(DF) 
+
+DF['employees_rate']<- cut(data$employees_rate,breaks=c(0,0.1,0.2,0.3,0.4,0.5))
+
+DF['approval_rate']<-cut(data$approval_rate,breaks=c(0,0.1,0.2,0.3,0.4,0.5))
+
+DF['forgiveness_rate']<-cut(data$forgiveness_rate,breaks=c(0,0.1,0.2,0.3,0.4,0.5))
+
+
+## delete useless column:
+DF<-select(DF,-c("X","cert","loannumber","originatinglenderlocationid","dateapproved","borrowername","naicscode","borrowercity","currentapprovalamount","X._of_employees","forgivenessamount","originatinglendercity","originatinglender","minority"))  
+
+## We MUST convert the label (called label) into type FACTOR!
+apply(DF,2,table) # 2 means columns
+GoPlot<-function(x){
+  G<-ggplot(data=DF,aes(.data[[x]],y=''))+
+    geom_bar(stat='identity',aes(fill=.data[[x]]))
+  return(G) 
+} 
+
+#lapply(names(DF),function(x) GoPlot(x))
+#test & train
+data_size<-nrow(DF) 
+TrainingSet_Size<-floor(data_size*(5/8)) 
+TrainingSet_Size ## 42868
+TestSet_Size<-data_size-TrainingSet_Size
+TestSet_Size #25721
+set.seed(2345)
+Trainsample<-sample(nrow(DF),TrainingSet_Size,replace=FALSE)
+Trainset<-DF[Trainsample,]
+head(Trainset)
+#delete column name:
+
+
+#table(Trainset$Product_importance) # 1 6 5
+Testset<-DF[-Trainsample,]
+nchar(DF)
+
+```
+
+```{r}
+
+#     Decision Trees
+##
+##      First - train the model with your training data
+##
+##      Second - test the model - get predictions - compare to the known labels you have.
+
+
+str(Trainset)
+str(Testset)
+
+DT <- rpart(Trainset$community_bank ~ ., 
+            data = Trainset, 
+            method="class",
+            parms = list(split="information"),
+           minsplit=10,minbucket=round(100/3),cp=0.01,maxdepth=10)
+
+summary(DT) 
+plotcp(DT) 
+fancyRpartPlot(DT) 
+## community bank & non community bank 的比例太靠近了，应该在这些地区多设立一些community bank（满足当地的需求） --> 解决跨州借款的问题（提供政府的供应） 供需 
+
+
+DT_2 <- rpart(Trainset$community_bank ~ ., 
+            data = Trainset, 
+            method="class",
+            parms = list(split="gini"),
+           minsplit=10,minbucket=round(100/50),cp=0.003,maxdepth=20)
+
+
+rpart.plot(DT_2)
+#####
+predicted1 = predict(DT_2,DF, type="class") 
+conf_matrix1=table(predicted1,DF$originatinglenderstate) 
+conf_matrix1
+
+``` 
+
+
+
+```{r} 
+###----------------------DATA FOR TREE 2----------------------
+## DISCOVER THE relatiopnship of CB & other variables after deleting the states
+options(scipen=999) ## scientific method = false
+getwd() 
+DF<-read.csv("revised_csbs.csv") 
+head(DF) 
+str(DF) 
+
+DF['employees_rate']<- cut(data$employees_rate,breaks=c(0,0.1,0.2,0.3,0.4,0.5))
+
+DF['approval_rate']<-cut(data$approval_rate,breaks=c(0,0.1,0.2,0.3,0.4,0.5))
+
+DF['forgiveness_rate']<-cut(data$forgiveness_rate,breaks=c(0,0.1,0.2,0.3,0.4,0.5))
+
+
+## delete useless column:
+DF<-select(DF,-c("X","cert","loannumber","originatinglenderlocationid","dateapproved","borrowername","naicscode","borrowercity","currentapprovalamount","X._of_employees","forgivenessamount","originatinglendercity","originatinglender","minority","borrowerstate","originatinglenderstate")) 
+
+## We MUST convert the label (called label) into type FACTOR!
+apply(DF,2,table) # 2 means columns
+GoPlot<-function(x){
+  G<-ggplot(data=DF,aes(.data[[x]],y=''))+
+    geom_bar(stat='identity',aes(fill=.data[[x]]))
+  return(G) 
+} 
+
+#lapply(names(DF),function(x) GoPlot(x))
+#test & train
+data_size<-nrow(DF) 
+TrainingSet_Size<-floor(data_size*(5/8)) 
+TrainingSet_Size ## 42868
+TestSet_Size<-data_size-TrainingSet_Size
+TestSet_Size #25721
+set.seed(2345)
+Trainsample<-sample(nrow(DF),TrainingSet_Size,replace=FALSE)
+Trainset<-DF[Trainsample,]
+head(Trainset)
+#delete column name:
+
+
+#table(Trainset$Product_importance) # 1 6 5
+Testset<-DF[-Trainsample,]
+nchar(DF)
+
+
+#------------------------------- Tree 2 using gini method & change cp to 0.00001
+
+##The complexity parameter (cp) is used to control the size of the decision tree and to select the optimal tree size. 
+
+
+DT2 <- rpart(Trainset$community_bank ~ ., 
+            data = Trainset, 
+            method="class",
+            parms = list(split="gini"),
+           minsplit=20,minbucket=round(100/50),cp=0.00001,maxdepth=30)
+
+summary(DT2)
+plotcp(DT2)
+
+#fancyRpartPlot(DT2) 
+rpart.plot(DT2)
+
+####----------------------- prediction -----------------------#### : 
+
+predicted_foregiveness = predict(DT2,DF, type="class")
+conf_matrix_foregiveness=table(predicted_foregiveness,DF$forgiveness_rate) 
+str(conf_matrix_foregiveness)
+
+### prediction for foregiveness ratio
+conf_matrix_foregiveness %>%
+  kbl(caption = "Foregiveness Ratio Prediction Table") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),full_width = F)%>%
+  kable_classic(full_width = F, html_font = "Cambria")
+
+## prediction for approval ratio
+predicted_approval = predict(DT2,DF, type="class")
+conf_matrix_approval=table(predicted_approval,DF$approval_rate) 
+conf_matrix_approval %>%
+  kbl(caption = "Approval Ratio Prediction Table") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),full_width = F)%>%
+  kable_classic(full_width = F, html_font = "Cambria")
+
+## prediction for employee ratio
+predict_employee =predict(DT2,DF, type="class")
+conf_matrix_employee=table(predict_employee,DF$employees_rate) 
+conf_matrix_employee  %>%
+  kbl(caption = "Employeement Ratio Prediction Table") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),full_width = F)%>%
+  kable_classic(full_width = F, html_font = "Cambria") 
+
+
+``` 
+
