@@ -24,7 +24,7 @@ Check missing values for all variables
 
 ```{r chunk2}
 gg_miss_var(ppp, show_pct = TRUE) +
-  labs(y = "Look at all the missing ones") +
+  labs(y = "Look at all the missing values") +
   theme_bw()
 ```
 Caption: Since the "minority" variable has more than 90% missing ones, and observations in " dateapproved" column are almost "	
