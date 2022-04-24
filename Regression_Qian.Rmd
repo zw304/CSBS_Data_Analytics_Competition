@@ -1,0 +1,423 @@
+---
+title: "Linear Regression"
+author: "Qian Leng"
+date: "2022/4/20"
+output: html_document
+---
+
+```{r warning=FALSE, include=FALSE}
+library(ISLR)
+library(MASS)
+library(Metrics)
+library(tidyverse)
+library(caret)
+library(leaps)
+```
+
+To predict the approval amount ratio and forgiveness amount ratio, we decided to do regression analysis. Regression analysis refers to a set of statistical methods that are used to estimate the relationships between dependent and independent variables. In our project, we chose approval amount ratio and forgiveness amount ratio as our dependent variables.
+
+Before the regression analysis, We use pairs() function in R to make a scatter plot matrix for all the numeric variables. We found that forgiveness amount has an obvious positive linear relationship with current approval amount. And so do the approval ratio and forgiveness ratio. It is very interesting that the number of employees in the bank does not have significant relationship with the bank's current approval amount and forgiveness amount, which means a big bank(only valued by number of employees) is not necessary to have a good loan capacity. To get more specific analysis, here comes the regression analysis.
+
+
+```{r import}
+data <- read.csv("revised_csbs.csv")
+options(scipen=999) ## scientific method = false
+head(data,2)
+str(data)
+```
+
+
+## subset
+
+```{r subset}
+subset <- data[,-c(1,4,5,10,20)]
+subset <- na.omit(subset)
+str(subset)
+```
+## chage character in each columns 
+
+```{r rename}
+## change the 
+subset$community_bank[subset$community_bank == "non_community_bank"] <- 0
+subset$community_bank[subset$community_bank == "community_bank"] <- 1
+
+subset$state_chartered[subset$state_chartered == "non_state_chartered"] <- 0
+subset$state_chartered[subset$state_chartered == "state_chartered"] <- 1
+
+subset$income_area_of_business[subset$income_area_of_business== "Non_Business_low_moderate_area"]<- 0
+subset$income_area_of_business[subset$income_area_of_business== "Business_low_moderate_area"]<- 1
+
+subset$minority[subset$minority== "non_minority_owned_business" ]<- 0
+subset$minority[subset$minority== "minority_owned_business"]<- 1
+
+```
+
+## Scatterplot Matrix for Numeric Variables
+```{r}
+#choose numeric columns
+pairs(~currentapprovalamount+X._of_employees+forgivenessamount+employees_ratio+approval_ratio+forgiveness_ratio,
+      data=subset, pch=21, main="Scatterplot Matrix of Approval/Forgiveness/Jobreported Related Variables")
+```
+
+
+
+## Linear Regression model
+
+### create training data and testing data 
+
+Since linear regression model is the easiest and most famous one, we decided to choose it as the first fitted model. To test our model prediction accuracy, we firstly separate our dataset into trainning set(75%) and testing set(25%) randomly.
+
+```{r}
+set.seed(225)
+row.train = sample(1:nrow(subset), 0.75*nrow(subset))
+training <- subset[row.train,]
+testing <- subset[-row.train,]
+```
+
+### create model
+
+For the first model, we choose current approval ratio as dependent variable and community bank, state chartered, rural or urban, income area of business, employees ratio, forgiveness ratio and the interactive variables employees_ratio*forgiveness_ratio as independent variables. For the second model, we change employees ratio into number of employees, forgiveness ratio into forgiveness amount. For the third model, the dependent variable is replaced by forgiveness amount ratio, and forgiveness amount ratio is replaced by approval ratio for independent variables. The forth model has the similar changing as model2 and model3. 
+
+
+#### Approval Amount Ratio
+
+```{r regression}
+## approval rate
+fit_rate_app1 <- lm(approval_ratio ~ community_bank + state_chartered + rural.urban + income_area_of_business +  originatinglenderstate + employees_ratio + forgiveness_ratio + employees_ratio*forgiveness_ratio, data = training)
+summary(fit_rate_app1)
+
+fit_amount_app1 <- lm(approval_ratio ~ community_bank + state_chartered + rural.urban + income_area_of_business + originatinglenderstate + X._of_employees + forgivenessamount + X._of_employees*forgivenessamount, data = training)
+summary(fit_amount_app1)
+```
+
+```{r VIF1}
+(data.frame(car::vif(fit_rate_app1)))
+
+#                                       GVIF Df GVIF..1..2.Df..
+#community_bank                     2.236944  1        1.495642
+#state_chartered                    1.305187  1        1.142448
+#rural.urban                        1.965680  1        1.402027
+#income_area_of_business            1.039397  1        1.019508
+#originatinglenderstate             9.234261 34        1.033230
+#employees_ratio                    3.457331  1        1.859390
+#forgiveness_ratio                  7.284041  1        2.698896
+#employees_ratio:forgiveness_ratio 10.959906  1        3.310575
+
+(data.frame(car::vif(fit_amount_app1)))
+#                                      GVIF Df GVIF..1..2.Df..
+#community_bank                    2.237648  1        1.495877
+#state_chartered                   1.317838  1        1.147971
+#rural.urban                       1.961060  1        1.400379
+#income_area_of_business           1.042078  1        1.020822
+#originatinglenderstate            6.794413 34        1.028579
+#X._of_employees                   4.056018  1        2.013956
+#forgivenessamount                 6.545244  1        2.558368
+#X._of_employees:forgivenessamount 9.306478  1        3.050652
+```
+
+```{r regression2}
+## delete the variables with high VIF: interactive variable; originating state
+fit_rate_app2 <- lm(approval_ratio ~ community_bank + state_chartered + rural.urban + income_area_of_business + employees_ratio + forgiveness_ratio, data = training)
+summary(fit_rate_app2)
+
+fit_amount_app2 <- lm(approval_ratio ~ community_bank + state_chartered + rural.urban + income_area_of_business + X._of_employees + forgivenessamount, data = training)
+summary(fit_amount_app2)
+```
+
+```{r VIF2}
+(data.frame(car::vif(fit_rate_app2)))
+#                        car..vif.fit_rate_app2.
+#community_bank                         1.265295
+#state_chartered                        1.013783
+#rural.urban                            1.303132
+#income_area_of_business                1.028066
+#employees_ratio                        1.383067
+#forgiveness_ratio                      1.391777
+
+(data.frame(car::vif(fit_amount_app2)))
+#                        car..vif.fit_amount_app2.
+#community_bank                           1.265030
+#state_chartered                          1.032614
+#rural.urban                              1.311975
+#income_area_of_business                  1.029609
+#X._of_employees                          2.288674
+#forgivenessamount                        2.314487
+```
+Now, all VIF value are small.
+
+
+```{r regression3}
+## delete the non-significant variables in regression2
+fit_rate_app3 <- lm(approval_ratio ~ community_bank + state_chartered + rural.urban + employees_ratio + forgiveness_ratio, data = training)
+summary(fit_rate_app3)
+
+fit_amount_app3 <- lm(approval_ratio ~ community_bank + state_chartered + rural.urban + income_area_of_business + X._of_employees + forgivenessamount, data = training)
+summary(fit_amount_app3)
+```
+
+```{r VIF3}
+#check VIF again
+(data.frame(car::vif(fit_rate_app3)))
+#                  car..vif.fit_rate_app3.
+#community_bank                   1.264076
+#state_chartered                  1.009355
+#rural.urban                      1.290925
+#employees_ratio                  1.382845
+#forgiveness_ratio                1.387842
+
+(data.frame(car::vif(fit_amount_app3)))
+#                        car..vif.fit_amount_app2.
+#community_bank                           1.265030
+#state_chartered                          1.032614
+#rural.urban                              1.311975
+#income_area_of_business                  1.029609
+#X._of_employees                          2.288674
+#forgivenessamount                        2.314487
+```
+
+
+For the first model, only employees ratio, forgiveness ratio and their interactive variables are significant, which means they have linear relationship with approval amount.While for the second model, community bank, state chartered, number of employees, forgiveness amount and the interactive variables all have linear relationship with approval rate. Although the second model seems have more appropriate independent variables than the first model, its adjusted R squared value is only 0.1969, and the first model's adjusted R squared value is 0.9954. In such circumstances, we prefer to choose the first model.
+
+
+```{r variable importance}
+#find the first three important features for our final model
+most_inf <- regsubsets(approval_ratio ~ community_bank + state_chartered + rural.urban + employees_ratio + forgiveness_ratio, data = training, nvmax = 4)
+#coef(most_inf,4) 
+summary_best_subset <- summary(most_inf)
+summary_best_subset$which[4,]  
+
+
+most_inf <- regsubsets(approval_ratio ~ community_bank + state_chartered + rural.urban + income_area_of_business + X._of_employees + forgivenessamount, data = training, nvmax = 4)
+#coef(most_inf,4) 
+summary_best_subset <- summary(most_inf)
+summary_best_subset$which[4,]  
+```
+
+To compare the two models better, We choose the first three most significant independent variables in the second model. And we found that they are forgiveness amount, community bank and the interactive variables (number of employees*forgiveness amount), which are a little different from model one. When we choose amount number instead of amount ratio as our independent variables, community bank will take more response for the dependent variable. 
+
+
+
+#### Forgiveness Amount Ratio
+
+```{r}
+## forgiveness rate
+fit_rate_for1 <- lm(forgiveness_ratio ~ community_bank + state_chartered + rural.urban + income_area_of_business + originatinglenderstate + employees_ratio + approval_ratio + employees_ratio*approval_ratio, data = training)
+summary(fit_rate_for1)
+
+fit_amount_for1 <- lm(forgiveness_ratio ~ community_bank + state_chartered + rural.urban + income_area_of_business + originatinglenderstate + X._of_employees + currentapprovalamount + X._of_employees*currentapprovalamount, data = training)
+summary(fit_amount_for1)
+
+```
+
+The results of prediction models for forgiveness ratio is very similar with the predication models for approval amount ratio. Thus we would like to choose the third model as our final model.
+
+
+```{r}
+(data.frame(car::vif(fit_rate_for1)))
+#community_bank                  2.236986  1        1.495656
+#state_chartered                 1.305214  1        1.142460
+#rural.urban                     1.966037  1        1.402155
+#income_area_of_business         1.039458  1        1.019538
+#originatinglenderstate          9.225129 34        1.033215
+#employees_ratio                 3.486595  1        1.867243
+#approval_ratio                  7.298130  1        2.701505
+#employees_ratio:approval_ratio 11.026136  1        3.320563
+
+
+(data.frame(car::vif(fit_amount_for1)))
+#                                          GVIF Df GVIF..1..2.Df..
+#community_bank                        2.237499  1        1.495827
+#state_chartered                       1.317875  1        1.147987
+#rural.urban                           1.961296  1        1.400463
+#income_area_of_business               1.042199  1        1.020882
+#originatinglenderstate                6.800124 34        1.028591
+#X._of_employees                       4.083601  1        2.020792
+#currentapprovalamount                 6.594975  1        2.568068
+#X._of_employees:currentapprovalamount 9.356613  1        3.058858
+```
+
+
+```{r}
+## forgiveness rate
+fit_rate_for2 <- lm(forgiveness_ratio ~ community_bank + state_chartered + rural.urban + income_area_of_business + employees_ratio + approval_ratio , data = training)
+summary(fit_rate_for2)
+
+fit_amount_for2 <- lm(forgiveness_ratio ~ community_bank + state_chartered + rural.urban + income_area_of_business + X._of_employees + currentapprovalamount , data = training)
+summary(fit_amount_for2)
+
+```
+
+```{r}
+(data.frame(car::vif(fit_rate_for2)))
+#                        car..vif.fit_rate_for2.
+#community_bank                         1.265415
+#state_chartered                        1.013822
+#rural.urban                            1.302968
+#income_area_of_business                1.028140
+#employees_ratio                        1.390735
+#approval_ratio                         1.399638
+
+
+(data.frame(car::vif(fit_amount_for2)))
+#                        car..vif.fit_amount_for2.
+#community_bank                           1.264933
+#state_chartered                          1.032914
+#rural.urban                              1.312088
+#income_area_of_business                  1.029724
+#X._of_employees                          2.313415
+#currentapprovalamount                    2.340132                                          
+```
+
+```{r}
+## forgiveness rate
+fit_rate_for3 <- lm(forgiveness_ratio ~ rural.urban + employees_ratio + approval_ratio , data = training)
+summary(fit_rate_for3)
+
+fit_amount_for3 <- lm(forgiveness_ratio ~ community_bank + state_chartered + rural.urban + income_area_of_business + X._of_employees + currentapprovalamount , data = training)
+summary(fit_amount_for3)
+```
+
+```{r}
+(data.frame(car::vif(fit_rate_for3)))
+#                car..vif.fit_rate_for3.
+#rural.urban                    1.030623
+#employees_ratio                1.390481
+#approval_ratio                 1.391331
+
+
+(data.frame(car::vif(fit_amount_for3)))
+#                        car..vif.fit_amount_for2.
+#community_bank                           1.264933
+#state_chartered                          1.032914
+#rural.urban                              1.312088
+#income_area_of_business                  1.029724
+#X._of_employees                          2.313415
+#currentapprovalamount                    2.340132                                          
+```
+
+
+```{r}
+#find the first three important features for our final model
+most_inf <- regsubsets(forgiveness_ratio ~ rural.urban + employees_ratio + approval_ratio, data = training, nvmax = 3)
+#coef(most_inf,4) 
+summary_best_subset <- summary(most_inf)
+summary_best_subset$which[3,]  
+
+
+most_inf <- regsubsets(forgiveness_ratio ~ community_bank + state_chartered + rural.urban + income_area_of_business + X._of_employees + currentapprovalamount, data = training, nvmax = 4)
+#coef(most_inf,4) 
+summary_best_subset <- summary(most_inf)
+summary_best_subset$which[4,]  
+```
+
+
+
+
+### Check VIF
+
+```{r VIF}
+#distribution plot for VIF in each model
+par(mfrow = c(2,2))
+
+(data.frame(car::vif(fit_rate_app3)))
+VIF1 <- data.frame(car::vif(fit_rate_app3))
+hist(VIF1$car..vif.fit_rate_app3., main = "VIF of Approval Rate Model(fit by rate)",
+     xlab = "VIF Value", ylab = "Number of Variables")
+
+(data.frame(car::vif(fit_amount_app3)))
+VIF2 <- data.frame(car::vif(fit_amount_app3))
+hist(VIF2$car..vif.fit_amount_app3., main = "VIF of Approval Rate Model(fit by amount)",
+     xlab = "VIF Value", ylab = "Number of Variables")
+
+(data.frame(car::vif(fit_rate_for3)))
+VIF3 <- data.frame(car::vif(fit_rate_for3))
+hist(VIF3$car..vif.fit_rate_for3., main = "VIF of Forgiveness Rate Model(fit by rate)",
+     xlab = "VIF Value", ylab = "Number of Variables")
+
+(data.frame(car::vif(fit_amount_for3)))
+VIF4 <- data.frame(car::vif(fit_amount_for3))
+hist(VIF4$car..vif.fit_amount_for3., main = "VIF of Forgiveness Rate Model(fit by amount)",
+     xlab = "VIF Value", ylab = "Number of Variables")
+
+
+#or be write as
+
+(data.frame(car::vif(fit_rate_app3)))
+VIF1 <- data.frame(car::vif(fit_rate_app3))
+hist(VIF1$car..vif.fit_rate_app3., main = "Model 1",
+     xlab = "VIF Value", ylab = "Number of Variables")
+
+(data.frame(car::vif(fit_amount_app3)))
+VIF2 <- data.frame(car::vif(fit_amount_app3))
+hist(VIF2$car..vif.fit_amount_app3., main = "Model 2",
+     xlab = "VIF Value", ylab = "Number of Variables")
+
+(data.frame(car::vif(fit_rate_for3)))
+VIF3 <- data.frame(car::vif(fit_rate_for3))
+hist(VIF3$car..vif.fit_rate_for3., main = "Model 3",
+     xlab = "VIF Value", ylab = "Number of Variables")
+
+(data.frame(car::vif(fit_amount_for3)))
+VIF4 <- data.frame(car::vif(fit_amount_for3))
+hist(VIF4$car..vif.fit_amount_for3., main = "Model 4",
+     xlab = "VIF Value", ylab = "Number of Variables")
+
+#all VIF values are below 10 
+```
+
+Variance inflation factor (VIF) is used to detect the severity of multicollinearity in the ordinary least square (OLS) regression analysis. We reckon that VIF > 5 is cause for concern and VIF > 10 indicates a serious collinearity problem.(Menard S. Applied Logistic Regression Analysis. 2nd edition. SAGE Publications, Inc; 2001.) And we can roughly conclude that our variables' VIF values are in the right range.
+
+### Prediction
+
+```{r Prediction}
+pred1 <- predict(fit_rate_app3,testing)
+pred2 <- predict(fit_amount_app3,testing)
+pred3 <- predict(fit_rate_for3,testing)
+pred4 <- predict(fit_amount_app3,testing)
+```
+
+
+```{r RMSE_R2, warning=FALSE}
+# create a table for RMSE and R2
+library(knitr)
+library(kableExtra)
+
+Model = c("Model 1", "Model 2", "Model 3","Model 4")
+RMSE = c(rmse(pred1, testing$approval_ratio),rmse(pred2, testing$approval_ratio), rmse(pred3, testing$forgiveness_ratio), rmse(pred4, testing$forgiveness_ratio))
+R2 = c(R2(pred1, testing$approval_ratio),R2(pred2, testing$approval_ratio), R2(pred3, testing$forgiveness_ratio), R2(pred4, testing$forgiveness_ratio))
+
+Results <- data.frame(Model, RMSE, R2)
+Results
+
+Results  %>%
+  kbl(caption = "Summary Table for Linear Regression Model") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),full_width = F)%>%
+  kable_classic(full_width = F, html_font = "Cambria")
+
+Results  %>%
+   kbl(caption = "Summary Table for Linear Regression Model") %>%
+   kable_styling(bootstrap_options = "striped", full_width = F, position = "center")
+```
+
+Root Mean Square Error (RMSE) is the standard deviation of the residuals. It is a measure of how spread out these residuals are. In other words, it tells how concentrated the data is around the line of best fit. So the lower RMSE we got, the better model we fitted. Thus, we would choose the first model to predict approval ratio and the third model to predict forgiveness ratio.
+
+
+```{r }
+par(mfrow=c(2,2))
+plot(fit_rate_app3)
+plot(fit_rate_for3)
+```
+
+First look at the first model. The residuals "bounce randomly" around the residual = 0 line. This suggests that the assumption that the relationship is linear is reasonable.The residuals roughly form a "horizontal band" around the residual = 0 line. This suggests that the variances of the error terms are equal. Also, there are some outliers on the plot.
+
+
+```{r cvm}
+#Create Confusion Matrix for Prediction Results
+#library(cvms)
+#conftab <- tibble(target = testing$approval_ratio, prediction = pred1)
+#basic_table <- table(conftab)
+#cfm <- as_tibble(basic_table)
+#cfm
+#plot_confusion_matrix(cfm, target_col = "target", prediction_col = "prediction", counts_col = "n")
+```
+
