@@ -1,0 +1,151 @@
+---
+title: "revised_csbs"
+author: "Qian|Zehui"
+date: "2022/4/14"
+output: html_document
+---
+```{r}
+library(stringr)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+```
+
+```{r import}
+csbs<- read.csv("Data.csv", header=T, na.strings=c("","N/A","NA"))
+head(csbs) 
+nrow(csbs) ## 1048575
+ncol(csbs) ## 19
+kable(head(csbs)) %>% kable_styling(bootstrap_options = "striped", full_width = F, position = "center")
+
+csbs <- csbs[,-c(1,2,3,6)]  #delete useless columns
+csbs <- na.omit(csbs)
+nrow(csbs) ## 68587
+ncol(csbs) ## 15
+```
+
+
+```{r rename}
+## rename column names:
+names(csbs)[names(csbs) == 'cb'] <- 'community_bank'
+names(csbs)[names(csbs) == 'stchrtr'] <- 'state_chartered'
+names(csbs)[names(csbs) == 'ruralurbanindicator'] <- 'rural/urban'
+names(csbs)[names(csbs) == 'lmiindicator'] <- 'income_area_of_business'
+names(csbs)[names(csbs) == 'jobsreported'] <- '#_of_employees'
+
+str(csbs)
+
+## change the 
+csbs$community_bank[csbs$community_bank == 0] <- "non_community_bank"
+csbs$community_bank[csbs$community_bank == 1] <- "community_bank"
+
+csbs$state_chartered[csbs$state_chartered == 0] <- "non_state_chartered"
+csbs$state_chartered[csbs$state_chartered == 1] <- "state_chartered"
+
+csbs$`rural/urban`[csbs$`rural/urban` == "U"] <- "Urban"
+csbs$`rural/urban`[csbs$`rural/urban` == "R"] <- "Rural"
+
+csbs$income_area_of_business[csbs$income_area_of_business==0]<-"Non_Business_low_moderate_area"
+csbs$income_area_of_business[csbs$income_area_of_business==1]<-"Business_low_moderate_area"
+
+csbs$minority[csbs$minority==0]<-"non_minority_owned_business"
+csbs$minority[csbs$minority==1]<-"minority_owned_business"
+
+```
+
+```{r}
+## calculate each case's jobsreported rate/ forgiveness rate / approval rate --> know the performance of that state
+## for reference of group by calculation: https://stackoverflow.com/questions/27134516/summarizing-by-subgroup-percentage-in-r
+options(scipen=999) ## scientific method = false
+
+## calculate employees_rate
+employees_ratio <- group_by(csbs, originatinglenderstate) %>% 
+  mutate(employees_ratio = `#_of_employees`/sum(`#_of_employees`)) %>% 
+  as.data.frame()
+
+
+## calculate approval_rate
+approval_ratio <- group_by(employees_ratio, originatinglenderstate) %>% 
+  mutate(approval_ratio = currentapprovalamount/sum(currentapprovalamount)) %>% 
+  as.data.frame()
+
+
+## calculate forgiveness_rate
+revised_csbs<- group_by(approval_ratio, originatinglenderstate) %>% 
+  mutate(forgiveness_ratio = forgivenessamount/sum(forgivenessamount)) %>% 
+  as.data.frame()
+
+head(revised_csbs,1)
+
+```
+
+```{r}
+#do additional data cleaning job for visualization 
+library(OneR)
+options(scipen=999) ## scientific method = false
+revised_csbs$approval_range <- bin(revised_csbs$currentapprovalamount, nbins = 20)
+```
+
+
+```{r outliers}
+# Boxplot of MPG by Car Cylinders
+par(mfrow = c(2,3))
+boxplot(revised_csbs$currentapprovalamount, main="current approval amount")
+boxplot(revised_csbs$forgivenessamount, main="forgiveness amount")
+boxplot(revised_csbs$`#_of_employees`, main="number of employees")
+boxplot(revised_csbs$approval_ratio, main="approval ratio")
+boxplot(revised_csbs$employees_ratio, main="approval ratio")
+boxplot(revised_csbs$employees_ratio, main="employees ratio")
+
+
+#delete outliers
+dim(revised_csbs) # 68587    18
+
+deleteout <- function(mycolname){
+  quartiles <- quantile(mycolname, probs=c(.25, .75), na.rm = FALSE)
+  IQR <- IQR(mycolname)
+  Lower <- quartiles[1] - 1.5*IQR
+  Upper <- quartiles[2] + 1.5*IQR
+  revised_csbs <- subset(revised_csbs, mycolname > Lower & mycolname < Upper)
+  return(revised_csbs)
+}
+
+revised_csbs <- deleteout(revised_csbs$currentapprovalamount) 
+revised_csbs <- deleteout(revised_csbs$forgivenessamount)
+revised_csbs <- deleteout(revised_csbs$`#_of_employees`) 
+revised_csbs <- deleteout(revised_csbs$approval_ratio)
+revised_csbs <- deleteout(revised_csbs$forgiveness_ratio) 
+revised_csbs <- deleteout(revised_csbs$employees_ratio)
+
+
+dim(revised_csbs) # 35955    18
+boxplot(revised_csbs$currentapprovalamount, main="current approval amount")
+boxplot(revised_csbs$forgivenessamount, main="forgiveness amount")
+boxplot(revised_csbs$`#_of_employees`, main="number of employees")
+boxplot(revised_csbs$approval_ratio, main="approval ratio")
+boxplot(revised_csbs$employees_ratio, main="approval ratio")
+boxplot(revised_csbs$employees_ratio, main="employees ratio")
+```
+
+```{r}
+nrow(revised_csbs) #35955
+ncol(revised_csbs) #18
+head(revised_csbs)
+
+## the new dataset is called "revised_csbs"
+#write.csv(revised_csbs,"revised_csbs.csv")
+```
+
+```{r}
+#do additional data cleaning job for visualization 
+library(OneR)
+options(scipen=999) ## scientific method = false
+revised_csbs$approval_range <- bin(revised_csbs$currentapprovalamount, nbins = 20)
+```
+
+
+```{r output}
+## the new dataset is called "revised_csbs"
+write.csv(revised_csbs,"revised_csbs.csv")
+```
+

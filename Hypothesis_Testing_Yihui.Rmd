@@ -1,0 +1,481 @@
+---
+title: "CSBS Competition"
+author: "Yihui Liu"
+date: 
+output: rmdformats::readthedown
+---
+
+# Overview Plots
+
+import data and libraries
+
+```{r chunk1}
+library(ggplot2)
+library(plotly)
+library(naniar)
+library(dplyr)
+library(OneR)
+library(rstatix)
+ppp <- read.csv("CSBS_Contest/ppp_loan_update.csv")
+```
+
+
+Check missing values for all variables
+
+```{r chunk2}
+gg_miss_var(ppp, show_pct = TRUE) +
+  labs(y = "Look at all the missing values") +
+  theme_bw()
+```
+Caption: Since the "minority" variable has more than 90% missing ones, and observations in " dateapproved" column are almost "	
+00:00.0", "minority" and "dateapproved" variables here should be dropped to do following analysis. 
+
+```{r chunk3}
+data <- ppp %>%
+  dplyr::select(-dateapproved, -minority) %>%
+  na.omit()
+write.csv(data,"datasetII.csv")
+```
+
+check data type
+
+```{r chunk4}
+str(data)
+data$ruralurbanindicator[data$ruralurbanindicator =="U"] = "Urban"
+data$ruralurbanindicator[data$ruralurbanindicator =="R"] = "Rural"
+data$cb[data$cb == '1'] = 'Community Bank'
+data$cb[data$cb == '0'] = 'Non-Community Bank'
+data$lmiindicator[data$lmiindicator=="0"] = "Non-l&m-income"
+data$lmiindicator[data$lmiindicator=="1"] = "L&m-income"
+```
+
+
+
+```{r chunk5, out.width = '\\maxwidth'}
+ggplot(data) +
+  aes(x = originatinglenderstate, 
+      y = forgivenessamount, 
+     fill = lmiindicator, 
+     colour = ruralurbanindicator, 
+     size = currentapprovalamount, group = cb) +
+  geom_point(shape = "circle filled") +
+  scale_fill_viridis_d(option = "plasma", 
+  direction = 1) +
+  scale_color_viridis_d(option = "plasma", direction = 1) +
+  labs(x = "Originating Lender State", 
+  y = "Forgiveness Amount", 
+  title = "Forgiveness Amount among Different Originating Lender States", 
+  fill = "Income Area of Business", 
+  color = "Rural or Urban Indicator", 
+  size = "Loan Approval Amount(current)") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+#ggplotly(p)
+```
+Caption: From this overview plot, it can be found that originating lender states with higher forgiveness amount always have current higher loan approval amount. The majority points in this scatterplot are marked as "urban" and "non-low&moderate-income".
+
+
+# Hypothesis Testing
+
+## For 'forgivenessamount' and 'ruralurbanindicator'
+
+Show the correlation between 'forgivenessamount' and 'ruralurbanindicator':
+
+```{r chunk6}
+rural <- data$forgivenessamount[data$ruralurbanindicator=="Rural"]
+urban <- data$forgivenessamount[data$ruralurbanindicator=="Urban"]  
+```
+
+Generate two-sided t-test, check the normality first
+
+## Normality Test before t-test:
+
+```{r chunk7}
+ks.test(data$forgivenessamount, 'pnorm')
+```
+
+The p-values are less than .05, which indicate that the data are not normally distributed.
+but t-test is valid for large samples from non-normal distribution, so it is still meaningful to do two sided t-test next.
+
+## Two-sided t-test for rural and urban data:
+
+```{r chunk8}
+t.test(rural, urban, 
+       alternative = "two.sided",
+       var.equal = FALSE)
+```
+
+p-value here is smaller than 0.05, true difference in means is not equal to 0.
+The forgiveness amount of business in rural and urban area are not the same. The difference on average is about 70k, with mean forgiveness amount of rural area and that of urban area are 120866.6 and 195353.3 separately.
+
+## Bar Plot for 'forgiveness' and 'lmiindicator'
+
+```{r chunk9}
+data$forgiveness_cat <- bin(data$forgivenessamount,
+                            5, labels = c("very_large", "large", "medium", 
+                                          "small", "very_small"))
+fldata <- data %>%
+  group_by(forgiveness_cat, lmiindicator) %>%
+  tally()
+
+ggplot(fldata) +
+ aes(x = lmiindicator, fill = forgiveness_cat, 
+     colour = forgiveness_cat, group = forgiveness_cat,weight = n) +
+ geom_bar() +
+ scale_fill_brewer(palette = "Pastel1", direction = 1) +
+ scale_color_brewer(palette = "Pastel1", direction = 1) +
+ labs(x = "Income Area of Business", y = "Counts", 
+      title = "Bar Plot of Forgiveness Amount Level", 
+      subtitle = "For Business in Low&Moderate and High Income Area", 
+      fill = "Forgiveness Amount Level", 
+      color = "Forgiveness Amount Level") +
+ theme_bw()
+```
+Caption: From the bar plot above, it is clear to know thfat almost all the business in each kind of income area are in very_large forgiveness level.
+
+## Bar Plot for 'forgiveness' and 'ruralurbanindicator'
+
+```{r chunk10}
+frdata <- data %>%
+  group_by(forgiveness_cat, ruralurbanindicator) %>%
+  tally()
+
+ggplot(frdata) +
+ aes(x = ruralurbanindicator, fill = forgiveness_cat, 
+     colour = forgiveness_cat, group = forgiveness_cat,weight = n) +
+ geom_bar() +
+ scale_fill_brewer(palette = "Pastel1", direction = 1) +
+ scale_color_brewer(palette = "Pastel1", direction = 1) +
+ labs(x = "Rural or Urban Indicator", y = "Counts", 
+      title = "Bar Plot of Forgiveness Amount Level", 
+      subtitle = "For Business in Rural and Urban Area", 
+      fill = "Forgiveness Amount Level", 
+      color = "Forgiveness Amount Level") +
+ theme_bw()
+```
+Caption: From the bar plot above, it is similar as the previous one that almost all the business in both rural and urban area are in very_large forgiveness level.
+
+## Disribution of forgiveness amount for urban & rural area
+
+```{r chunk11}
+frbar <- data %>%
+  filter(ruralurbanindicator == "Rural") %>% 
+  group_by(forgiveness_cat) %>%
+  tally()
+
+ggplot(frbar) +
+  aes(x = forgiveness_cat, weight = n) +
+  geom_bar(fill = "#5B40A9") +
+  labs(
+    x = "Forgiveness Amount Level",
+    y = "Counts",
+    title = "Distribution of Forgiveness Amount in Rural Area"
+  ) +
+  theme_bw()
+
+fubar <- data %>%
+  filter(ruralurbanindicator == "Urban") %>% 
+  group_by(forgiveness_cat) %>%
+  tally()
+
+ggplot(fubar) +
+  aes(x = forgiveness_cat, weight = n) +
+  geom_bar(fill = "#5B40A9") +
+  labs(
+    x = "Forgiveness Amount Level",
+    y = "Counts",
+    title = "Distribution of Forgiveness Amount in Urban Area"
+  ) +
+  theme_bw()
+```
+Caption: Bar charts here present that distribution of all forgiveness amount level in both rural and urban area looks similar, almost all the business are in high forgiveness amount level, for the rest of the business, it is more likely that they are have large forgiveness amount level. Just very few companies are in medium or small or very_small forgiveness amount level.
+
+
+## For 'currentapprovalamount' and 'lmiindicator'
+
+Explore the correlation between 'currentapprovalamount' and 'lmiindicator': 
+
+Generate two-sided t-test, check the normality first
+
+```{r chunk12}
+ks.test(data$currentapprovalamount, 'pnorm')
+```
+
+The p-values are less than .05, which indicate that the data are not normally distributed.
+but t-test is valid for large samples from non-normal distribution, so it is still meaningful to do two sided t-test next.
+
+## Two-sample t-test for lmiindicator:
+
+```{r chunk13}
+lm <- data$currentapprovalamount[data$lmiindicator == "L&m-income"]
+nonlm <- data$currentapprovalamount[data$lmiindicator == "Non-l&m-income"]
+t.test(lm, nonlm, 
+       alternative = "two.sided",
+       var.equal = FALSE)
+```
+
+p-value here is smaller than 0.05, true difference in means is not equal to 0
+The current loan approval amount of business in low&moderate and high income area are not the same. The difference on average is about 30k, with mean current approval amount of low&moderate income area and that of high income area are 198365.1 and 168817.7 separately.
+
+
+## Plots
+
+Plot for 'ruralurbanindicator' and 'forgivenessamount'
+
+```{r chunk14}
+urdata <- data %>%
+  group_by(ruralurbanindicator, cb) %>%
+  summarise(forgivenessamount = sum(forgivenessamount)) %>%
+  na.omit()
+
+nn <- data %>%
+  group_by(ruralurbanindicator, cb) %>%
+  summarise(num = n()) %>%
+  na.omit()
+
+ggplot(data=urdata, aes(x=ruralurbanindicator, 
+                        y=forgivenessamount, 
+                        group=cb)) +
+  geom_line(data=urdata,aes(color = cb)) +
+  labs(x = "", y = "Forgiveness Amount") + 
+  ggtitle("Forgiveness Amount of Business of Community bank and Non-community bank 
+          in Rural & Urban Areas")
+```
+
+Caption: 
+It can be observed from this plot that the PPP loan forgiveness amount of community bank in rural area is higher than non-community bank, maybe because the local community banks offer better rates and lower fees, which have led PPP lending to small businesses and support a forgiveness process that is minimally burdensome for borrowers so they can focus on preserving their businesses. But this pattern doesn't apply to urban area, it is probably because community banking organizations are target small businesses owners and have small assets, so there aren't any community banks in urban area. Because for rural area, there are more than two times as many community banks as there are non-community banks; but for urban area, the number of non-community bank is about two times as many as community banks.
+
+Plot for 'lmiindicator' and 'currenapprovalamount'
+
+```{r chunk15}
+lcdata <- data %>%
+  group_by(lmiindicator, originatinglenderstate) %>%
+  summarise(currentapprovalamount = sum(currentapprovalamount)) %>%
+  na.omit()
+
+ggplot(data=lcdata, aes(x=originatinglenderstate, 
+                        y=currentapprovalamount, 
+                        group=lmiindicator)) +
+  geom_line(data=lcdata,aes(color = lmiindicator)) +
+  labs(x = "", y = "Loan Approval Amount (current)", 
+       color = "Income Area of Business") + 
+  ggtitle("Loan Approval Amount (current) of Business in Different Income 
+          Regions of Different Originating Lender State") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+Caption: 
+California and Ohio state have the highest current loan approval amount, especially for the business not in low&moderate income area. And it can be observed that businesses in high income area have more current loan approval amount than those in low and moderate income area, especially in some states, such as Ohio, California and Maryland, the current loan approval amount of business in high income area are two times more than those in low income area; Also, in some states, such as Washington.DC and Guam, there is not so much difference between business in high income area and that in low and moderate area.
+
+```{r chunk30}
+rudata <- data %>%
+  group_by(ruralurbanindicator, originatinglenderstate) %>%
+  summarise(currentapprovalamount = sum(currentapprovalamount)) %>%
+  na.omit()
+
+ggplot(data=rudata, aes(x=originatinglenderstate, 
+                        y=currentapprovalamount, 
+                        group=ruralurbanindicator)) +
+  geom_line(data=rudata,aes(color = ruralurbanindicator)) +
+  labs(x = "", y = "Loan Approval Amount (current)",
+       color = "Rural or Urban Indicator") + 
+  ggtitle("Loan Approval Amount (current) of Business in Rural&Urban Area 
+          of Different Originating Lender State") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+Caption: 
+California and Ohio state have the highest current loan approval amount, especially for the business in urban area. And it can be observed that businesses in urban area have much more current loan approval amount than those in rural area, especially in some states, such as California, Ohio and New York, the current loan approval amount of business in urban area are eight times more than those in rural area; Also, in some states, such as Washington.DC and Guam, there is no difference between business in urban area and that in rural area.
+
+```{r chunk31}
+diffrui <- rudata %>%
+  group_by(originatinglenderstate) %>%
+  summarise(diffrui = max(currentapprovalamount) - min(currentapprovalamount))
+
+```
+
+TOP6 Originating Lender States which has High Difference of RU: CA, OH, NY, NC, NJ, IL
+TOP6 Originating Lender States which has Low  Difference of RU: DC, GU, WY, SC, WV, WI
+
+```{r chunk32}
+highrustate <- rudata %>%
+  filter(originatinglenderstate == "CA" | originatinglenderstate == "OH" | 
+           originatinglenderstate == "NJ" | originatinglenderstate == "NC" |
+           originatinglenderstate == "NY" | originatinglenderstate == "IL"
+           )
+
+lowrustate <- rudata %>%
+  filter(originatinglenderstate == "DC" | originatinglenderstate == "GU" | 
+           originatinglenderstate == "WV" | originatinglenderstate == "WY" |
+           originatinglenderstate == "SC" | originatinglenderstate == "WI"
+         )
+```
+
+Plot currentapprovalamount by ruralurbanindicator and color by ruralurbanindicator
+
+```{r chunk33}
+library("ggpubr")
+ggboxplot(highrustate, x = "ruralurbanindicator", y = "currentapprovalamount", 
+          color = "ruralurbanindicator", palette = c("#00AFBB", "#E7B800"),
+          title = "Loan Approval Amount for High Difference Originating Lender 
+          State Over Rural&Urban Area",
+          ylab = "Loan Approval Amount(current)", 
+          xlab = "Rural or Urban Indicator") +
+  labs(color = "Rural or Urban Indicator") +
+  theme_bw()
+
+ggboxplot(lowrustate, x = "ruralurbanindicator", y = "currentapprovalamount", 
+          color = "ruralurbanindicator", palette = c("#00AFBB", "#E7B800"),
+          title = "Loan Approval Amount for Low Difference Originating Lender 
+          State Over Rural&Urban Area",
+          ylab = "Loan Approval Amount(current)", 
+          xlab = "Rural or Urban Indicator") +
+  labs(color = "Rural or Urban Indicator") +
+  theme_bw()
+```
+Caption: From boxplots above, the median, max, min value and outliers can be checked easily. It can be observed that in high difference originating lender states, the overall loan approval amount in rural area is much lower than the difference of overall loan approval amount situation in different income area is larger in high-difference states than in low-difference states.
+
+Calculate the difference of currentapprovalamount of business in low&moderate income area and in high income area for each state:
+
+```{r chunk16}
+difflmi <- lcdata %>%
+  group_by(originatinglenderstate) %>%
+  summarise(difflmi = max(currentapprovalamount) - min(currentapprovalamount))
+
+```
+
+TOP6 Originating Lender States which has High Difference of LM: CA, OH, PA, NC, NY, IL
+TOP6 Originating Lender States which has Low  Difference of LM: DC, GU, WV, DE, VT, NM
+
+```{r chunk17}
+highstate <- lcdata %>%
+  filter(originatinglenderstate == "CA" | originatinglenderstate == "OH" | 
+           originatinglenderstate == "PA" | originatinglenderstate == "NC" |
+           originatinglenderstate == "NY" | originatinglenderstate == "IL"
+           )
+
+lowstate <- lcdata %>%
+  filter(originatinglenderstate == "DC" | originatinglenderstate == "GU" | 
+           originatinglenderstate == "WV" | originatinglenderstate == "DE" |
+           originatinglenderstate == "VT" | originatinglenderstate == "NM"
+         )
+```
+
+
+Compute summary statistics by highstate and lowstate - count, mean, sd:
+
+```{r chunk18}
+group_by(highstate, lmiindicator) %>%
+  summarise(
+    count = n(),
+    mean = mean(currentapprovalamount, na.rm = TRUE),
+    sd = sd(currentapprovalamount, na.rm = TRUE)
+  )
+
+group_by(lowstate, lmiindicator) %>%
+  summarise(
+    count = n(),
+    mean = mean(currentapprovalamount, na.rm = TRUE),
+    sd = sd(currentapprovalamount, na.rm = TRUE)
+  )
+
+```
+
+Plot currentapprovalamount by lmiindicator and color by lmiindicator
+
+```{r chunk19}
+ggboxplot(highstate, x = "lmiindicator", y = "currentapprovalamount", 
+          color = "lmiindicator", palette = c("#00AFBB", "#E7B800"),
+          title = "Loan Approval Amount for High Difference Originating Lender 
+          State Over Different Income Regions",
+          ylab = "Loan Approval Amount(current)", 
+          xlab = "Income Area of Business"
+          ) +
+  labs(color = "Income Area of Business") +
+  theme_bw()
+
+ggboxplot(lowstate, x = "lmiindicator", y = "currentapprovalamount", 
+          color = "lmiindicator", palette = c("#00AFBB", "#E7B800"),
+          title = "Loan Approval Amount for Low Difference Originating Lender 
+          State Over Different Income Regions",
+          ylab = "Loan Approval Amount(current)", 
+          xlab = "Income Area of Business"
+          ) +
+  labs(color = "Income Area of Business") +
+  theme_bw()
+```
+Caption: From boxplots above, the median, max, min value and outliers can be checked easily. It can be observed that the difference of overall loan approval amount situation in different income area is larger in high-difference states than in low-difference states.
+
+## ANOVA Test
+
+Compute One-Way ANOVA TEST for high difference states: 
+
+```{r chunk20}
+res.aov.high <- aov(currentapprovalamount ~ lmiindicator, data = highstate)
+summary(res.aov.high)
+```
+
+Interpretation:As the p-value is smaller than the significance level 0.05, 
+it can be concluded that there are significant differences between the lmiindicator highlighted with “**" in the model summary for high difference states.
+
+Compute One-Way ANOVA TEST for low difference states: 
+
+```{r chunk21}
+res.aov.low <- aov(currentapprovalamount ~ lmiindicator, data = lowstate)
+summary(res.aov.low)
+```
+Interpretation:As the p-value is larger than the significance level 0.05, 
+it can be concluded that there are not significant differences between the lmiindicator in the model summary for low difference states.
+
+
+## Chi- Square Test
+Create a function here
+(input: the name of originatinglenderstate, output:p-value results for chisq.test of forgiveness_cat~ruralurbanindicator and forgiveness_cat~lmiindicator)
+
+```{r chunk22}
+lm_for_states <- function(state){
+  x <- data$forgiveness_cat[data$originatinglenderstate == state]
+  z <- data$lmiindicator[data$originatinglenderstate == state]
+  chisq_for_lm <- chisq.test(x,z)
+  chisq_for_lm$p.value <- pchisq(chisq_for_lm$statistic,
+                                 chisq_for_lm$parameter,lower.tail=FALSE)
+  #my_chisq_results <- list(chisq_for_ru$p.value,chisq_for_lm$p.value)
+  cat("p-value of Chi Square Test for forgiveness amount and low&moderate income indicator:", "\n")
+  print(chisq_for_lm$p.value)
+}
+
+```
+
+Try an example here to check the function:
+Here use the high difference states name: CA, IL, NC, NJ, OH, PA
+(Limitation here is that some states like DC cannot apply to this function, there shows an error"Error in chisq.test(x, y) : 'x' and 'y' must have at least 2 levels")
+
+```{r chunk23}
+states <- list("CA", "OH", "IL", "NC", "NJ", "OH", "PA")
+for (i in states){
+  lm_for_states(i)
+}
+```
+
+Interpretation: According to p-values shown above, the majority of them are larger than 0.05, which shows there is no obvious relationship between forgiveness amount level and whether the business is located in a rural or in an urban area. Similar results hold for lenders within a low&moderate or a high income area, but there are still some p- values of originating lender state, such as Pennsylvania, whose p-values are smaller than 0.05, which means there are significant correlation between forgiveness amount level and whether the business is located in a rural or in an urban area as well as within a low&moderate or a high income area. The significance of correlation is based on the states and it really depends.
+
+```{r chunk24}
+ru_for_states <- function(state){
+  x <- data$forgiveness_cat[data$originatinglenderstate == state]
+  y <- data$ruralurbanindicator[data$originatinglenderstate == state]
+  chisq_for_ru <- chisq.test(x,y)
+  chisq_for_ru$p.value <- pchisq(chisq_for_ru$statistic,
+                                 chisq_for_ru$parameter,lower.tail=FALSE)
+  cat("p-value of Chi Square Test for forgiveness amount and rural&urban indicator:", "\n")
+  print(chisq_for_ru$p.value)
+}
+```
+
+```{r chunk25}
+states1 <- list("CA", "OH", "PA", "NC", "NJ", "IL")
+for (i in states1){
+  ru_for_states(i)
+}
+```
