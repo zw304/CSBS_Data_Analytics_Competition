@@ -1,0 +1,627 @@
+<html><head>
+    <title>CSBS-Georgetown University</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://zehuiwu.georgetown.domains/CSBS/style.css">
+    <link rel="shortcut icon" href="https://zehuiwu.georgetown.domains/CSBS/Figures/Jack2.png">
+    <link rel="bookmark" href="https://zehuiwu.georgetown.domains/CSBS/Figures/Jack2.png">
+</head> 
+
+<body>
+<div class="headerpage-501"><ul style="display:inline-block;">
+    <div class="project-name" style="padding-top:10px;font-size:28px;color:white;text-align:right;float:right"> CSBS 2022 Annual Data Analytics Competition </div>
+</ul>
+
+
+
+<ul>
+    <a href="" class="headerbtn"> <i><b>Georgetown University</b></i></a>
+</ul></div>
+
+
+
+<div class="main">
+    <div class="left-side">
+        <div class="left-navi">
+            <ul>
+                <p>Table of Contents:</p>
+                <li class="nav active"><a href="#Abstract">1. Abstract</a></li>
+                <li class="nav"><a href="#Motivations">2. Motivations</a></li>
+                <li class="nav"><a href="#Data_Explor">3. Data Exploration</a></li>
+                <li class="nav"><a href="#Data_Cleaning"> -- Data Cleaning </a></li>
+                <li class="nav"><a href="#Overview_Vis"> -- Overview Visualizations</a></li> 
+                <li class="nav"><a href="#Structure"> 4. Structure </a></li>
+                <li class="nav"><a href="#Models"> 5. Model Fitting & Analysis  </a></li>
+                <li class="nav"><a href="#ARM"> -- ARM & Networking</a></li>
+                <li class="nav"><a href="#Hypothesis"> -- Hypothesis Testing</a></li>
+                <li class="nav"><a href="#Regression"> -- Regression Analysis</a></li>
+                <li class="nav"><a href="#Decision_Tree"> -- Decision Tree</a></li>
+                <li class="nav"><a href="#Random_Forest"> -- Random Forest</a></li>
+                <li class="nav"><a href="#Boosting"> -- Boosting Models</a></li>
+                <li class="nav"><a href="#Results">6. Reuslts & Future Steps(Neural Networks)</a></li>
+                <li class="nav"><a href="#Conclusion">7. Conclusion & Recommendations</a></li>
+                ----------------------------
+                <li class="nav"><a href="#Appendix">Appendix</a></li>
+                <li class="nav"><a href="#Reference">Reference</a></li>
+            </ul>
+        </div>
+    </div>
+
+
+    <div class="content">
+        <img class="center-fig" src="https://zehuiwu.georgetown.domains/CSBS/csbs_background.png" height = "400" width = "70%">
+        <br><br>
+        <br><br>
+        <h2 style="text-align:center">The Role of Community Banks During the Pandemic </h2>
+        <br><br>
+        <p style="text-align:center"> <i><b>Georgetown University</b></i></p>
+        <img class="center-fig" style="width:20%" src="https://zehuiwu.georgetown.domains/CSBS/Figures/gu_2.jpeg">
+        
+        <br>
+        <p style="text-align:center">Authors (In alphabetical order by last name):</p>
+        <p style="text-align:center">Qian Leng</p>
+        <p style="text-align:center">Yihui Liu</p>
+        <p style="text-align:center">Zehui Wu</p>
+        
+        <br>
+        <p style="text-align:center">Faculty Advisor: </p>
+        <p style="text-align:center">Dr. Purna Gamage </p>
+        
+            
+            <br><br>
+            <br><br>
+            <br><br>
+        <h1 style="text-align:center"> Final Report</h1>
+            <br><br>
+            
+        <section id="Abstract">
+        <h2>1. Abstract</h2>
+        <p> Community banks primarily provide services to the local business in the neighborhood communities which will enhance their personal relationship with the customers. This research project studies the influence that the community banks have on the US economy than the other regular banks and to identify the role that community banks play in recent years.  </p>
+        <p> In this report, ARM and networking, hypothesis testing, regression analysis, decision trees, random forest, and boosting models were fitted to discover whether community banks will continue playing an important role in the United States. From the results of hypothesis testing, for most originating lender states, there is no obvious correlation between forgiveness amount level, current loan approval amount, and the location of business whether the headquarter is in rural or urban areas as well as different income regions, but there are still some states that don't apply this pattern. The significance of the relationship is fully based on the originating lender states. After digging deeply of the machine learning methods, it proves that though income area has a positive correlation, it is the least correlated variable while lender state and community banks are the most influential and positively correlated with the bank’s forgiveness and approval amount, which could give policymakers insights about what specific aspect would let a bank be more financially powerful. 
+        </p>
+        
+        <p> The main goal of this research project is to provide data-driven insights that would help policymakers, regulators, scholars, and others to understand the performance of community banks during the COVID-19 period. Furthermore, community banks could help small businesses maintain their labor force especially during the pandemic periods. 
+        </p> 
+ </section>
+ 
+ <br>
+ <section id="Motivations">
+        <h2>2. Motivations</h2>
+        <p>A. In order to display the correlation between current loan approval amount as well as  forgiveness amount among businesses in different income regions and in different areas, hypothesis testing methods such as two sample t-test and chi-square test are generated. The loan approval amount and forgiveness amount need to meet the business needs in a range which they can repay comfortably, thus, whether business in rural or urban areas as well as in low to moderate- or high- income regions are significant factors for the amounts.
+        </p>
+        <p>B. Created models to predict future “approval amount” and “forgiveness amount”. It could help lender banks have a better understanding for their approval and forgiveness capacity; it may give borrowers suggestions on where to apply for a loan; It also helps policy makers have a general view of the current supply and demand for loans, then they could enact new laws to balance the market. 
+        </p>
+        <p>C. To discover more influence of how community banks have on the United States economic development and employment contribution during the COVID-19 period, more machine learning methods such as random forest and boosting models and interactive visualizations (link attached) are generated for policy makers and regulators. 
+        </p>
+</section>
+
+<br>
+ <section id="Data_Explor">
+        <h2>3. Data Explorations </h2>
+</section>
+<section id="Data_Cleaning">
+        <h3> A. Data Cleaning</h3>
+</section>     
+<h4>a. Dataset I:</h4>
+        <p>For this study, Paycheck Protection Program (PPP) dataset provided by CSBS has been used. The raw dataset has 19 columns and 1048575 rows. Variables “loan number”,  “originating lender location id”, “cert (FDIC Bank Certificate Number)” and “date approved” are dropped firstly, since observations in the "date approved" column are almost "00:00.0" and they don’t make any sense to data analysis. Then, the rows containing missing values are dropped to improve the dataset quality. For the rest of variables, the column names are changed to make them more readable. Since the sample size of different originating states in the whole dataset is uneven, the results could be biased. For example, sample size is large for California, but small for Idaho, because of the high population in California. Therefore, three new columns which are called “employees ratio”,  “approval ratio” and “forgiveness ratio” are created to avoid any inaccuracies due to biased sample sizes. The employees ratio means the number of employees of one bank as a percentage of the total number of employees in all banks. The approval ratio means the current approval amount of one bank as a percentage of the total current approval amount in all banks. The forgiveness ratio means the forgiveness amount of one bank as a percentage of the total forgiveness amount in all banks. These variables could give an intuitive explanation for the bank’s loan capacity level. </p>
+
+<iframe src="https://public.tableau.com/shared/YBMH28952?:display_count=n&:origin=viz_share_link?:language=en-US&amp;publish=yes&amp;:display_count=n&amp;:origin=viz_share_link&amp;:showVizHome=no&amp;:embed=true" width="100%" height="700" ></iframe>
+<p style="text-align:center">Figure 1 </p>
+<br>
+<iframe src="https://public.tableau.com/views/USMapofForegivenessRate/Dashboard3?:language=en-US&:display_count=n&:origin=viz_share_link?:language=en-US&amp;publish=yes&amp;:display_count=n&amp;:origin=viz_share_link&amp;:showVizHome=no&amp;:embed=true" width="100%" height="700"></iframe>
+<p style="text-align:center">Figure 2 </p>
+<br>
+
+<p> Figure1 shows a bar plot of Avg. Loan Approval Ratio for each Lender State(left) and Avg. Approval Amount for each Lender State(right) with orange bar stands for non-community banks and blue bar for community banks. Due to the uneven sample size of different originating states, the “amount” variables could not represent the ability to give a loan for each state, but “ratio” variables could give a better explanation. Figure 2 is designed to assist readers to check by selecting a different range of Avg. Forgiveness Rate grouped by if the bank is community bank or not.
+</p>
+
+
+<p>It can also be found that the original dataset has plenty of outliers (see Figure 3), thus outlier processing has been done and here came out Figure 4. The final dataset is output as Dataset I, with 35955 rows and 18 columns.
+</p>
+
+
+<br>
+<figure style="width:100%">
+
+<img class="center-fig" style="width:67%"  src="https://qianleng.georgetown.domains/csbs/fig3.jpg">
+<p style="text-align:center">Figure 3 </p>
+<br>
+<img class="center-fig" style="width:67%"  src="https://qianleng.georgetown.domains/csbs/fig4.jpg">
+<p style="text-align:center">Figure 4 </p> 
+<br>
+</figure>
+
+<h4>b. Dataset II:</h4>
+<br>
+<img class="center-fig" src="https://yhliu1006.georgetown.domains/csbs_fig/fig5.jpeg">
+<p style="text-align:center">Figure 5 </p> 
+<br>
+
+
+<p> Figure 5 shows the summary of all the missing values of each variable in the PPP dataset. Since the "minority" variable has more than 90% missing values, which indicates the remainder of data here is not enough to use as an indicator for labeling minority owned businesses. Therefore, this column here should be dropped for the hypothesis testing analysis. After dropping the variable and repeating the cleaning steps for  Dataset I, the rest of the dataset has 17 columns and 308768 rows. 
+</p>
+
+
+<section id="Overview_Vis">
+        <h3>B. Overview Visualizations (based on Dataset I):</h3>
+</section>  
+
+<br>
+<iframe src="https://qianleng.georgetown.domains/csbs/fig6.html" width="100%" height="500"></iframe>
+<p style="text-align:center">Figure 6 </p> 
+<br>
+
+<p> Figure 6 is a bubble chart made by python using plotly package. The bubble size and  animation frame are decided by the current approval amount. For animation frames, the current approval amounts are divided into 20 bins, which have the same number of observations. According to the bubble chart, current approval amount and forgiveness amount have a positive relationship, and there is no obvious relationship between the originating lender state and the approval/forgiveness amounts. Therefore, it might need more specific analysis to check if there is any relationship between originating lender states and the approval/forgiveness amount.
+</p>
+
+<br>
+<iframe src="https://qianleng.georgetown.domains/csbs/fig7.html" width="100%" height="600"></iframe>
+<p style="text-align:center">Figure 7 </p> 
+<br>
+<p>This scatter plot (see Figure 7, https://qianleng.georgetown.domains/csbs/fig7.html) is mainly about current approval amount and forgiveness amount, which is divided by whether the bank is a community bank or non-community bank, whether the bank is a state chartered bank or not, and different income regions of business the bank is located in. It can be concluded that, first of all, current approval amount and forgiveness amount have a positive linear relationship. Secondly, community banks tend to have a smaller approval amount and smaller forgiveness amount compared with non-community banks. Thirdly, state chartered banks are more likely to be non-community banks, and non-state chartered banks are more likely to be community banks. Lastly, for banks in the low to moderate income area, they might have a lower approval amount and forgiveness amount.
+</p>
+
+<br>
+<iframe src="https://qianleng.georgetown.domains/csbs/fig8.html" width="100%" height="500"></iframe>
+<p style="text-align:center">Figure 8 </p> 
+<br>
+
+<p>Figure 8 is a distribution plot that includes information about the relationship between whether the bank is minority owned and its current approval amount or forgiveness amount. The plot shows the distribution by box plot and bar chart. It could be found that no matter the banks are minority owned or non-minority owned, their approval amounts are concentrated under 2 million dollars. And since minority owned banks tend to have lower current approval amounts, thus the sum of forgiveness amounts are relatively higher when approval amounts are relatively lower. And when current approval amounts are higher than 4 million dollars, most of the banks are non minority owned. Therefore, it could be concluded that non-minority banks tend to have a better ability to give a loan.
+</p>
+<br>
+<img class="center-fig" src="https://qianleng.georgetown.domains/csbs/fig9.jpg">
+<p style="text-align:center">Figure 9 </p> 
+<br>
+
+<p>Figure 9 contains two word clouds for originating lender and originating lender city. The size of the word is ordered by the word frequency. It suggests that at least in Dataset I, Prestamos CDFI is the most common or popular lender, followed by Customers Bank, U.S. Bank, Benworth Capital, Celtic Bank Corporation and BSD Capital. And for originating lender cities, the top several busiest cities are Teaneck, Phoenixville, Lake Mary, Miami, New York City and Los Angeles. Although the lists of lender banks and lender cities might be biased, at least one can believe that these banks and cities have a relatively better lending ability.
+</p>
+
+<br>
+<iframe src="https://public.tableau.com/views/CompasionbetweenApprovalRateandAmountState/Dashboard4?:language=en-US&:display_count=n&:origin=viz_share_link?:language=en-US&amp;publish=yes&amp;:display_count=n&amp;:origin=viz_share_link&amp;:showVizHome=no&amp;:embed=true" width="100%" height="700"></iframe>
+<p style="text-align:center">Figure 10 </p>
+<br>
+
+<p>Figure10 is a Tableau plot combining information of lender states, community banks, and lender banks’ name with corresponding approval and forgiveness amount in total. The specific lender banks and lender states could be checked by the dropdown column on the right side. It shows clearly that for originating lender states, the number of community banks is higher than the number of non-community banks. Therefore, the total amount of both approval and forgiveness are higher in lender states. Borrowers can be offered insights that going to community banks is more likely to gain a high forgiveness and approval amount.  In addition, by selecting the specific name of lender banks, the plot can offer borrowers insight about if his or her targeted lender bank is the most beneficial based on his requirements. For example, if a borrower from Wyoming is in an emergency and really needs to borrow a large amount of money over 10 thousands of dollars. It would be better for him to avoid Summit National Bank, Cowboy State Bank, and Wyoming Bank & Trust. Also, banks’ regulators can check the difference between approval amount and forgiveness amount to decide to offer punishment or help. 
+</p>
+
+<br>
+<iframe src="https://public.tableau.com/views/BarPlotofRatesinApprovalEmploymentForegiveness/Dashboard2?:language=en-US&:display_count=n&:origin=viz_share_link?:language=en-US&amp;publish=yes&amp;:display_count=n&amp;:origin=viz_share_link&amp;:showVizHome=no&amp;:embed=true" width="100%" height="700"></iframe>
+<p style="text-align:center">Figure 11 </p>
+<br>
+<p>Figure11 provides some combined information of community banks based on if the bank is in rural or low income area, and if they are state chartered. Each state is marked by a distinct color as the legend shows. It is generated to give an overview of how these different categories are connected together and to understand the relationship between the forgiveness/employment/approval ratio. At the point of regulators and scholars, this plot provides information that besides the overall performance of community banks is much better than non-community banks, it also reveals that community banks in urban area with non-state chartered in low to moderate income area have the highest rates in total (e.g. Washington DC). However, for non-community banks, those in urban areas with state chartered banks have higher rates (e.g. Guam & Nevada). This can give regulators insight that “state chartered” can have a very positive influence on banks especially for non-community banks. Some insights can be given for policy makers, since the average ratio of forgiveness, employment, and approval rates are very similar in each state, which means that these three variables might have some potential relationships with each other. 
+</p>
+
+<br>
+<section id="Structure">
+        <h2>4. Structure</h2>
+        <p>Step 1, in order to get a better understanding of the dataset and contribute to the later analysis, ARM (Association Rule Mining)  and networking analysis were generated for Dataset I. Step 2, based on the findings from ARM and networking analysis, three hypothesis testing were created to further explore the relationships between the variables. Step 3, regression analysis was done as a quantitative analysis about the target variables (current approval amount, approval ratio, forgiveness amount and forgiveness ratio). The model assessments were done here to validate the model prediction accuracy as a prediction model. Step 4, after learning about the limits of the regression model, decision tree models were fitted to provide more flexibility. Step 5, the random forest model was fitted, since it fits an ensemble of trees, which performs much better than one decision tree. Step 6, the boosting model was fitted to check if it might be a better choice compared to the random forest model. As a final step, conclusions were drawn from the results obtained from the analysis, and made suggestions for the policy makers.
+</p>
+</section>
+
+<br>
+<section id="Models">
+        <h2>5. Model Fitting & Analysis </h2>
+        </section>
+<section id="ARM">        
+<h3>A. ARM & Networking: based on support, confidence, and lift rule   
+</h3>
+</section>
+
+
+<p>To discover deeply about the potential relationship between variables and forgiveness, approval, and employment amount which is detected in the data exploration part, the ARM model, a rule-based machine learning method for discovering interesting relations between variables in large databases, is applied. 
+</p>
+
+<h4>Support Rule: </h4>
+<p>Support=(A+B)/Total</p>
+<p>Support rule can be explained as a measure of how frequently the collection of items ({A} and {B}) occurs together as a percentage of all transactions. Or, it can be viewed as a fraction of transactions that contain both A and B. 
+
+</p>
+<br>
+<img class="center-fig" src="https://zehuiwu.georgetown.domains/CSBS/Figures/Table1.jpeg">
+<p style="text-align:center">Table 1: Top 15 Support Rule Sets</p>
+<br>
+
+<p>Table 1 shows the top 15 sets under support rule which can validate our hypothesis that there is a very strong positive relationship between approval, forgiveness, and employment ratio. And the most frequent category they fall is (0,0.1) which indicates the overall performance from the researched data is fair and average. Figure 12 is an interactive plot that shows the overview of the top 15 rules analysis. For some of the approval rate and forgiveness rate, they have a relationship with the state chartered variable which also gives policy makers hints about the state-chartered banks usage in increasing the approval and forgiveness rate. Also, if the bank is state chartered, it would have no direct influence on the job rate. </p>
+<br>
+<iframe src="https://zehuiwu.georgetown.domains/CSBS/Figures/Fig12.html" width="100%" height="500"></iframe>
+<p style="text-align:center">Figure 12 </p> 
+<br>
+
+<p>Figure 13 is also an interactive plot generated by R which provides a more intuitive overview of how variables are connected as discussed above.</p>
+<br>
+<iframe src="https://zehuiwu.georgetown.domains/CSBS/Figures/Fig13.html" width="100%" height="500"></iframe>
+<p style="text-align:center">Figure 13 </p> 
+<br>
+
+<h4>b. Confidence Rule: </h4>
+<p>Confidence =(A+B)/A </p>
+<p>Confidence rule can be explained as a ratio of the number of transactions that include all data in {B} and in {A} to the number of transactions that include all items in {A} [1]. Or, it can be viewed as how often items in B appear in transactions that contain A only. 
+</p>
+
+<br>
+<img class="center-fig" src="https://zehuiwu.georgetown.domains/CSBS/Figures/Table2.jpeg">
+<p style="text-align:center">Table 2: Top 15 Confidence Rule Sets
+</p>
+<br>
+
+<p>Fig 14 shows policy makers of how often multi-layer networks appear in transactions that contain single-layer networks only. The information of which specific states of lender and borrower have the most frequent influence on each specific rate can be found. It seems that for the range of (0,0.1), the lender state of Wisconsin and borrower state of Alabama & Wisconsin have the most frequent combination together which in some level reflect these three states’ economic level. Since (0,0.1) is the lowest category among 0 to 0.5 range scales. Therefore, policy makers can be suggested to establish more community banks or financial assistance to these low rate states. 
+</p>
+
+<br>
+<iframe src="https://zehuiwu.georgetown.domains/CSBS/Figures/Fig14.html" width="100%" height="500"></iframe>
+<p style="text-align:center">Figure 14 </p> 
+<br>
+<h4>c. Lift Rule: </h4>
+<p>Lift = ((A+B)/A) / (B/Total)</p>
+<p>Lift rule can be explained as the ratio of the confidence to expected confidence. How much our confidence has increased that B will be purchased given that A was purchased.
+</p>
+
+<br>
+<img class="center-fig" src="https://zehuiwu.georgetown.domains/CSBS/Figures/Table3.jpeg">
+<p style="text-align:center">Table 3: Top 15 Lift Rule Sets</p>
+<br>
+
+<p>The applied lift Rule shows the confidence level between the relationship of the increasing of multi-layer networks and the increasing of single-layer networks which means they are expected to have a positive correlation to each other. From Figure 15, it can be revealed that the response variables are all set as Lender State of Wisconsin specifically, which may be caused by the fact that the total number of community banks and non-community banks is the highest in Wisconsin among all 50 states. Therefore, focusing on the Lender State of Wisconsin, the top 15 matches show that Wisconsin has a combination of a high percentage of community banks with non-minority owned business. Since minority owned business is defined as “the business is at least 51% owned by such individuals” which reflects that in Wisconsin the survival rate for non-minority-owned business is higher than minority owned business or small business. This can give insights to policy makers in Wisconsin to help establish more small businesses to make more variety, and this is important for policy makers to expand an ownership society to all classes of the society.  
+</p>
+
+<br>
+<iframe src="https://zehuiwu.georgetown.domains/CSBS/Figures/Fig15.html" width="100%" height="500"></iframe>
+<p style="text-align:center">Figure 15 </p> 
+<br>
+
+<p>However, checking the table, the majority of employment ratio is still between 0 to 0.1. Since minority-owned businesses are typically smaller and have fewer employees than non-minority-owned businesses, which can reflect the horrible survival situation of minority-owned-business in Wisconsin. Therefore, suggestions such as providing more programs on the federal, state, county and city levels which can support and foster minority business enterprises to grow and then mitigate the monopoly from large business can be given to policy makers. 
+</p>
+
+
+<section id="Hypothesis">        
+<h3>B. Hypothesis Testing:   </h3>
+</section>
+<br>
+<img class="center-fig" src="https://yhliu1006.georgetown.domains/csbs_fig/fig16.png">
+<p style="text-align:center">Figure 16</p>
+<br>
+
+
+<p>It can be found from Figure 16 that originating lender states with higher forgiveness amounts always have higher current loan approval amounts. The majority points in this scatterplot are marked as "urban" and "non-low to moderate-income", which means companies are more likely to locate in high income regions of urban areas. However, the dots on this scatter plot are so dense that it is difficult to analyze the relationship between each variable. Hence, more detailed charts should be generated later. </p> 
+<p>The goal is to analyze the relationship between “forgiveness amount” and “rural urban” indicator first since, from the graph above, businesses have preference on where they would like to locate their headquarters. Two sample t-test is one of the most commonly used hypothesis testing methods used for comparing the average difference between two groups, and for the dataset analyzed here, groups are split based on the location of the business which is in a rural area or an urban area. </p>
+<p>Before generating the two-sided t-test, a normality test should be performed to check the normality of the numerical variable. One sample Kolmogorov-Smirnov (K-S) test is a really simple and useful model for testing if a variable follows a given distribution in a population, such as a normal distribution. Thus, a K-S test is performed on the forgiveness amount using the “pnorm” parameter, which can be used to check the normality of this distribution. Null hypothesis here is that the mean forgiveness amounts of business in rural and urban areas are the same. As a result, the p-values are less than 0.05, we have enough evidence to reject the null hypothesis at 5% significance level, which indicates that the data are not normally distributed. but t-test is valid for large samples from non-normal distribution by CLT, so it is still meaningful to do a two sided t-test next. </p>
+
+<br>
+<img class="center-fig" src="https://yhliu1006.georgetown.domains/csbs_fig/tab4.png">
+<p style="text-align:center">Table 4</p>
+<br>
+<p>According to the results above, the p-value is smaller than 0.05, which means that true difference in means is not equal to 0 at 5% significance level. The forgiveness amount of business in rural and urban areas are not the same. The difference on average is about 70k dollars, with the mean forgiveness amount of rural area and that of urban area are 120866.6 dollars and 195353.3 dollars separately. 
+</p>
+<p>Besides two sample t-tests, Pearson’s chi-square test is a statistical test used to compare observed results with expected results. The purpose of this test is to determine if a difference between observed data and expected data is due to chance, or if it is due to a relationship between the variables used for studying. However, the required data type of the chi-square test is categorical, thus, forgiveness amount needs to be separated into 5 groups using bin function and labeled different forgiveness amount levels as “very_large", "large", "medium", "small" and "very_small", which can be seen clearly on Figure 17 as below: 
+</p>
+
+
+<br>
+<img class="center-fig" src="https://yhliu1006.georgetown.domains/csbs_fig/fig17.jpeg">
+<br>
+<p>From Figure 17, it is clear that almost all the businesses in both rural and urban areas has a very large forgiveness level. In order to see a detailed distribution of each forgiveness amount level, two bar plots were made in Figure 18:
+</p>
+
+<br>
+<figure style="width:100%">
+<img class="center-fig" style="width:67%" src="https://yhliu1006.georgetown.domains/csbs_fig/fig18-1.jpeg">
+<br>
+<img class="center-fig" style="width:67%" src="https://yhliu1006.georgetown.domains/csbs_fig/fig18-2.jpeg">
+<p style="text-align:center">Figure 18</p>
+</figure>
+<br>
+
+<p>Bar charts here present that distribution of all forgiveness amount levels in both rural and urban areas looks similar, almost all the businesses are in high forgiveness amount level, for the rest of the business, it is more likely that they are at a large forgiveness amount level. Just very few companies are at medium or small or very small forgiveness amount level. 
+</p>
+<p>In order to facilitate the display the performance of chi-square test for each originating lender state, a function is created here: one can input the name of originating lender states and the output will be the p-values of the chi-square test that was done to check the forgiveness amount level in rural or urban areas or in different income regions. By checking this function, states in which businesses have high differences in loan approval amount when located in different income regions(CA, IL, NC, NJ, OH, PA) are used as an example here (see Table 5).
+</p>
+
+<br>
+<img class="center-fig" src="https://yhliu1006.georgetown.domains/csbs_fig/tab5.png">
+<p style="text-align:center">Table 5</p>
+<br>
+
+<p>According to p-values in Table 5, the majority of them are larger than 0.05, which shows there is no obvious relationship between forgiveness amount level and whether the business is located in a rural or in an urban area. Similar results hold for lenders within a low to moderate- or a high-income area, but there are still some p-values of originating lender state, such as Pennsylvania, whose p-values are smaller than 0.05, which means there are significant correlation between forgiveness amount level and whether the business is located in a rural or in an urban area as well as within a low to moderate- or a high-income area. The significance of correlation is really based on the states.
+</p>
+
+<p>The main topic for this report is the role of community banks during the pandemic, thus, “community bank” is a significant factor that needs to be taken into consideration while exploring the relationship between forgiveness amount and “rural urban” indicator. Figure 19 indicates that the PPP loan forgiveness amount of community bank in rural area is higher than non-community bank, maybe because the local community banks offer better rates and lower fees, which have led PPP lending to small businesses and support a forgiveness process that is minimally burdensome for borrowers so they can focus on preserving their businesses[2]. But this pattern doesn't apply to urban areas, it is probably because community banking organizations target small business owners and have small assets, so there aren't any community banks in urban areas. Because in rural areas, there are more than two times as many community banks as there are non-community banks; but for urban areas, the number of non-community banks is about two times as many as community banks.
+</p>
+
+<br>
+<img class="center-fig" src="https://yhliu1006.georgetown.domains/csbs_fig/fig19.jpeg">
+<p style="text-align:center">Figure 19</p>
+<br>
+
+<p>From Figure 16, it can be observed that businesses also have preference on high income regions rather than low or moderate income regions while choosing their location. To explore more, Figure 20 is generated to see more detailed information, that almost all the businesses in each kind of income region are at a very large forgiveness amount level.
+</p>
+
+
+<br>
+<img class="center-fig" src="https://yhliu1006.georgetown.domains/csbs_fig/fig20.jpeg">
+<p style="text-align:center">Figure 20</p>
+<br>
+
+<p>In addition, the current loan approval amount is an important estimator for hypothesis testing. Before generating two-sided t-test and making an exploration of the relationship between loan approval amount of business in different income regions, the normality test should be displayed first, the result is similar to the previous analysis in page 21 that although the p-values is less than 0.05, which indicates that the data are not normally distributed. T-test is valid for large samples from non-normal distribution, so it is still meaningful to do a two sided t-test next.
+</p>
+
+<br>
+<img class="center-fig" src="https://yhliu1006.georgetown.domains/csbs_fig/tab6.png">
+<p style="text-align:center">Table 6</p>
+<br>
+
+<p>The performance of t-test shows that p-value here is smaller than 0.05, true difference in means is not equal to 0. The current loan approval amount of businesses in low to moderate and high income regions are not the same. The difference on average is about 30k dollars, with the mean current approval amount of the low to moderate income area and that of the high income area are 198365.1 dollars  and 168817.7 dollars separately.
+</p>
+<p>To better understand the relationship between the loan approval amount of business in different areas as well as in different income regions of different originating lender states, Figure 21 and Figure 22 are generated.
+</p>
+
+
+<br>
+<img class="center-fig" src="https://yhliu1006.georgetown.domains/csbs_fig/fig21.jpeg">
+<p style="text-align:center">Figure 21
+</p>
+<br>
+
+<p>From Figure 21, it is clear that California and Ohio states have the highest current loan approval amount, especially for businesses not in low to moderate income areas. And it can be observed that businesses in high income area have more “current loan approval amount” than those in low and moderate income area, especially in some states, such as Ohio, California and Maryland, the “current loan approval amount” of business in high income area are two times more than those in low income area; Also, in some states, such as Washington.DC and Guam, there is not so much difference between business in high income area and that in low and moderate area.
+</p>
+
+<br>
+<img class="center-fig" src="https://yhliu1006.georgetown.domains/csbs_fig/fig22.jpeg">
+<p style="text-align:center">Figure 22</p>
+<br>
+<p>But according to Figure 22, it can be observed that California and Ohio state have the highest current loan approval amount, especially for businesses in urban areas. And it can be observed that businesses in urban area have much more current loan approval amount than those in rural area, especially in some states, such as California, Ohio and New York, the current loan approval amount of business in urban area are eight times more than those in rural area; Also, in some states, such as Washington.DC and Guam, there is no difference between business in urban area and that in rural area.
+</p>
+
+<p>Then, the mean difference is calculated for each originating lender state among different income regions and different areas. TOP 6 states which have high difference and low difference are selected to make a new list and used for the following analysis. Figure 23 and Figure 24 illustrate box plots that show overall performance of the relationship between loan approval amount in different areas and different level income regions for high and low difference originating lender states.
+</p>
+
+<br>
+<figure style="width:100%">
+<img class="center-fig" style="width:67%" src="https://yhliu1006.georgetown.domains/csbs_fig/fig23-1.jpeg">
+<br>
+<img class="center-fig" style="width:67%" src="https://yhliu1006.georgetown.domains/csbs_fig/fig23-2.jpeg"> 
+
+<p style="text-align:center">Figure 23</p>
+<br>
+</figure>
+<p>From Figure 23 above, the median, max, min value and outliers can be checked easily. It can be observed that in high-difference originating lender states, the overall loan approval amount in rural areas is much lower than that in urban areas; however, for low-difference states, it is surprising to see that the overall loan approval amount situation in rural areas is better than that in urban areas. 
+</p>
+
+<br>
+
+<figure style="width:100%">
+<img class="center-fig" style="width:67%" src="https://yhliu1006.georgetown.domains/csbs_fig/fig24-1.jpeg">
+<br>
+<img class="center-fig" style="width:67%" src="https://yhliu1006.georgetown.domains/csbs_fig/fig24-2.jpeg">
+
+<p style="text-align:center">Figure 24</p>
+</figure>
+<br>
+<p>Figure 24 presents that the difference of overall loan approval amount situation in different income regions is larger in high-difference states than in low-difference states.</p>
+
+<section id="Regression">        
+<h3>C. Regression Analysis:  </h3>
+</section>
+<p>Regression analysis refers to a set of statistical methods that are used to estimate the relationships between dependent and independent variables. In this project, approval amount ratio (the current approval amount of one bank as a percentage of the total current approval amount in all banks) and forgiveness amount ratio (the forgiveness amount of one bank as a percentage of the total forgiveness amount in all banks) were chosen as the dependent variables (target variables). Since the ratio variables could provide more normalized results than the amount variables, the regression model would predict the approval/forgiveness ratio instead of the approval/forgiveness amount.
+</p>
+<p>Before the regression analysis, a scatter plot matrix (see Figure 25) for all the numeric variables was generated by pairs() function in R. This could provide a general view for correlation between the variables. It suggests that the forgiveness amount has an obvious positive linear relationship with the current approval amount. And so do the approval ratio and the forgiveness ratio. It is very interesting that the number of employees in the bank does not have a significant relationship with the bank's current approval amount and forgiveness amount, which means a big bank(only valued by number of employees) is not necessary to have a good loan ability.
+</p>
+<br>
+<img class="center-fig" src="https://qianleng.georgetown.domains/csbs/fig25.jpg">
+<p style="text-align:center">Figure 25</p>
+<br>
+
+<p>Since the linear regression model is the simplest and most common model used in machine learning, it is chosen as the first fitted model. Then, the Dataset I is separated into a training set(75%) and testing set(25%) randomly.  
+</p>
+
+<p>To begin with, two linear regression models were used to predict approval ratio. For the first model, the current approval ratio is chosen as the target variable, and community bank, state chartered, rural or urban, income area of business, originating lender state, employees ratio (the number of employees of one bank as a percentage of the total number of employees in all banks), forgiveness ratio and the interactive variables (employees ratio) * (forgiveness ratio) are predictor variables. For the second model, the employee ratio is changed into number of employees, forgiveness ratio into forgiveness amount. After fitting the linear regression model, Variance inflation factor (VIF) checked for the presence of multicollinearity among the predictor variables. Since the interactive variable (employees ratio) * (forgiveness ratio) and originating lender state both have a high VIF(10±1), they should be deleted from the models.
+</p>
+
+<p>Next, the two models were fitted after removing the variables that had a high VIF. Now the new models’ VIF are all under 2.5. And then the insignificant variables (95% confidence interval) were removed in each model. 
+</p>
+
+
+<br>
+<img class="center-fig" src="https://qianleng.georgetown.domains/csbs/fig26.jpg">
+<p style="text-align:center">Figure 26</p>
+<br>
+<p>VIF and variables’ t-test significance were checked again and then the regsubsets() function was used to find four most important variables (highlighted below) in the models. Since the prediction models for forgiveness ratio are very similar to the approval ratio prediction models, another two models could be generated. Figure 26 is a distribution plot of VIF of the four models. The models’ VIF are all under 2.5, which means that the multicollinearity is very low in the models. The final four models are written below:
+</p>
+
+<p style="text-align:center">Model 1</p>
+<p style="text-align:center">approval_ratio = -0.00000002733 + 0.00000009032community_bank - 0.00000012044state_chartered + 0.00000008867urban + 0.01176577037employees_ratio + 0.98624993102forgiveness_ratio
+</p>
+
+<p style="text-align:center"> Model 2</p>
+<p style="text-align:center">approval_ratio = 0.00004199523885 + 0.00000690513619community_bank - 0.00000382836596state_chartered - 0.00001300574216urban - 0.00000311085489low_to_moderate_area + 0.00000799397624number_of_employees + 0.00000000116882forgiveness_amount</p>
+
+
+<p style="text-align:center">Model 3</p>
+<p style="text-align:center">forgiveness_ratio = -0.00000018605 - 0.00000008536urban - 0.00594944601employees_ratio + 1.00678959060approval_ratio</p>
+
+<p style="text-align:center">Model 4</p>
+<p style="text-align:center">forgiveness_ratio = 0.0000422004596 + 0.0000068415241community_bank + 0.0000040426365state_chartered - 0.0000131922433urban - 0.0000030208423low_to_moderate_area - 0.0000082178251number_of_employees + 0.0000000011893current_approval_amount
+</p>
+
+<br>
+<img class="center-fig" style="width:70%" src="https://qianleng.georgetown.domains/csbs/table7.jpg">
+<p style="text-align:center">Table 7</p>
+<br>
+<p>After fitting the four models, the approval ratio and forgiveness ratio were predicted via the testing set. The RMSE(Root Mean Square Error; the standard deviation of the residuals (prediction errors))and R squared are listed in Table 7. It is obvious that Model 1 and Model 3 are the best linear regression  models (have lower RMSE) to predict approval ratio and forgiveness ratio. In Model 1, banks with a high forgiveness ratio and employees ratio are more likely to have a high approval ratio. When the other predictors are fixed,  1 unit increase in the forgiveness ratio could cause the approval ratio to increase about 0.986 units.  And community banks and urban banks are also prone to have a higher approval ratio, but state chartered banks work negatively to get a higher approval ratio. In Model 3, a higher approval ratio also tends to have a higher forgiveness ratio. When the other predictors are fixed,  1 unit increase of approval ratio could cause forgiveness ratio to increase about 1 unit. And urban banks and banks with a higher employees ratio are less likely to obtain a higher forgiveness ratio.
+ </p>
+<p>Figure 27 and Figure 28 are model diagnostics plots for Model 1 and Model 3.  For both  Model 1 and Model 3, the residuals vs fitted plots reveal a linearity and homoscedasticity. It still has some outliers after outlier processing. The Q-Q plots suggest that the residuals are not normally distributed. The scale-location plots show most standardized residuals are not changing much as a function of the fitted values. 
+</p>
+<p>Overall, these two models could provide high-valued information to the final results.</p>
+
+
+<br>
+<figure style="width:100%">
+<img class="center-fig" style="width:67%" src="https://qianleng.georgetown.domains/csbs/fig27.jpg">
+<p style="text-align:center">Figure 27</p>
+<img class="center-fig" style="width:67%" src="https://qianleng.georgetown.domains/csbs/fig28.jpg">
+<p style="text-align:center">Figure 28</p>
+</figure>
+<br>
+<p>Even though the regression models provide more interpretability, it has a low prediction accuracy. Therefore, tree based methods which provide more flexibility and high prediction accuracy were used in the next step. 
+</p>
+
+
+<section id="Decision_Tree">        
+<h3>D. Decision Tree:  </h3>
+</section>
+<h4>a. Decision Tree I: </h4>
+
+<br>
+<img class="center-fig" src="https://zehuiwu.georgetown.domains/CSBS/Figures/Fig29.png">
+<p style="text-align:center">Figure 29</p>
+<br>
+
+<p> The above decision tree is about different ratios of forgiveness, approval, and employee. More attention is paid on non-community banks’ development in this tree. Unlike community banks which are mainly located in urban areas, the decision nodes let us know that the non-community banks are mostly in rural areas where the average income is low to moderate with state-chartered. The approval rate is around 0.1 to 0.2 which is better than the majority range of 0 to 0.1 during the covid-19 period. The employment ratio performs very well (reaching 0.4 to 0.5) when the non-community bank is not chartered by states. This might be explained as some restrictions, strict regulations, or lower salary on average offered by state-chartered banks. Therefore, the regulators of these non-community banks can revise the corresponding rules of hiring employees if they would like to expand their services. 
+</p>
+
+
+<br>
+<img class="center-fig" style="width:70%" src="https://zehuiwu.georgetown.domains/CSBS/Figures/table8_forgiveness.jpeg">
+<br>
+<img class="center-fig" style="width:70%" src="https://zehuiwu.georgetown.domains/CSBS/Figures/table8_Approval.jpeg">
+<br>
+<img class="center-fig" style="width:70%" src="https://zehuiwu.georgetown.domains/CSBS/Figures/table8_employment.jpeg">
+<p style="text-align:center">Table 8: Prediction I on forgiveness ratio, approval ratio, and employment  ratio</p>
+<br>
+
+<p>Table 8 shows the prediction based on the train and test loan datasets. The distribution and overview can be shown specifically about banks and their ratio range which stands for the economic and employment level influenced by a bank for the state the bank is in. The prediction gives policymakers insights that the financial strength for community and non community banks are very similar. Compared to community banks, non-community banks have more contribution on a low level ratio while for the ratio range of 0.1 to 0.2, or a better financial contribution ratio, community banks are the major composition. It reflects that during the covid-19 period, the community banks contribute a lot to states with higher ratio of employment, approval, and forgiveness ratio, and non-community banks are beneficial more to states with lowest ratio.  From this prediction, since there is a gap between 0.2 to 0.4, policy makers can make more regulations to fulfill the gap by providing more benefits and balancing the ratio distribution.</p>
+
+
+
+<h4>a. Decision Tree II: </h4>
+<br>
+<img class="center-fig" src="https://zehuiwu.georgetown.domains/CSBS/Figures/Fig30.png">
+<p style="text-align:center">Figure 30</p>
+<br>
+
+<p>This second decision tree and prediction is established based on the GINI index. It has many leaves and a deeper depth. Table 9 shows different sets of corresponding borrower states and originating lender states below.
+</p>
+
+
+
+<br>
+
+<img class="center-fig" src="https://zehuiwu.georgetown.domains/CSBS/Figures/table9_Prediction_States&community_banks.jpeg">
+<p style="text-align:center">Table 9: Prediction II on the distribution of community banks 
+</p>
+<br>
+<p>For the left nodes, it seems that despite the borrower state which is the same as its originating lender state (about 50%), the states of Alabama, Arkansas, Arizona, California, Colorado, Delaware, Georgia, Guam, Illinois, Massachusetts, Missouri, Northern Mariana Islands, Montana, New Jersey, Oregon, Virginia, Washington, and West Virginia are more likely to be the borrower states instead of lender states. To discover the reason behind it, the prediction of community banks is made. Since Figure 10 provides an insight that the major banks of lender states are community banks, it can be seen that the reason people go to the other states to borrow money is because the states they originally in have very few community banks. However,  from the prediction, it shows that the number of community banks in some borrower states such as Virginia, Washington and West Virginia are much higher than the number of non-community banks which might imply that the performance, strategy, or efficiency of community banks in these states are worse than the lender states banks. Policy makers can then establish more policies to help foster the development of community banks in these states and then benefit the ordinary borrowers.
+</p>
+<p>For the right nodes, it focuses more on non-community banks, and there are no overlapping borrower and lender states. Also, the total matches of states is much lower than the community banks, which can be concluded that people prefer to borrow money from urban area’s community banks than non-community banks.
+</p>
+
+<h4>c. Decision Tree III: </h4>Decision Tree III: 
+<br>
+<img class="center-fig" src="https://zehuiwu.georgetown.domains/CSBS/Figures/Fig31.jpeg">
+<p style="text-align:center">Figure 31</p>
+<br>
+
+<p>To discover more about the relationship between banks and the approval amount, the third tree (Figure 31) is made. This tree shows that for a higher value of approval amount, it mostly happens with the condition of high-income area of originating lender states of Alabama, Arkansas, Colorado, Florida, Illinois, Missouri, Mississippi, Montana, New jersey, New York, Oklahoma, Oregon, Pennsylvania, Texas, Utah, Washington, Wisconsin. For borrowers, they can take advantage and develop a bigger company in these states with a higher borrowing amount. It also shows that for community banks, non-minority owned business have a much higher approval amount than minority owned business which means that government or policy makers can give more financial support or grants to community banks which are only owned by small groups to help them grow. 
+</p>
+
+
+
+<section id="Random_Forest">        
+<h3>E. Random Forest: </h3>
+</section>
+<br>
+<img class="center-fig" src="https://zehuiwu.georgetown.domains/CSBS/Figures/Fig32.jpeg">
+<p style="text-align:center">Figure 32</p>
+<br>
+
+<p>While there is more interpretability in a Decision Tree, Random Forest (ensemble of trees) provides much better prediction accuracy. The Random forest is made to compare the accuracy of prediction of decision trees. Random forest can be applied to a very large amount of dataset. Also, as a combination of hundreds of decision trees, random forest would generate the prediction and result with a higher accuracy value and lower prediction errors, or called RMSE (Root Mean Square Error). This random forest model was found through a grid research of different parameters in each iteration number of trees and the number of parameters to include in each split which will give a different tree each time which decorrelate the ensemble of trees which leads to a better RMSE. The above relative influence of variables shows directly about how variables influenced the prediction of approval amount.
+</p>
+
+
+
+<br>
+<img class="center-fig" src="https://zehuiwu.georgetown.domains/CSBS/Figures/Fig33.jpeg">
+<p style="text-align:center">Figure 33</p>
+<br>
+<p>The left plot of Figure 33 is about how much each variable has improved the MSE, which is the most robust and informative measure with the meaning of the higher number, the more important. The right plot is about the NodePurity of the trees which means the more important the variable is, the higher the value is. It shows that the most influential variable is originating lender state, and the second one as community bank, while the least influential variable is income area of business. Policy makers can decide to put more emphasis on these variables if they would like to increase the financial level of banks. It might be explained as different states have their own unique policy of providing approval amounts, and the total amount of value can be very different as if the bank is a community bank. By noticing this, regulators can then research the policy of lender states in the 3rd decision tree model and apply their policy advantages to those states who have a pretty low approval amount. It would help a lot to increase the economic level for all states as a whole. </p>
+
+<section id="Boosting">        
+<h3>F. Boosting Models: </h3>
+</section>
+<br>
+<img class="center-fig" style="width:67%" src="https://zehuiwu.georgetown.domains/CSBS/Figures/table10.png">
+<p style="text-align:center">Table 10 (Influential variables under Boosting)
+</p><br>
+<p>To decide the most accurate model, the boosting model is tested as a comparison of decision tree and random forest. Boosting uses sets of weak learners (small trees) to correct the residuals slowly using a learning rate. The process of generating a boosting model is firstly selecting a random sample of data and then fitted and trained sequentially to a more modified version of prediction. Mentioned By by Gareth James(“An Introduction to Statistical Learning”, page 352) [3], it is known that since each new tree is fit to the signal that is left over from the earlier trees, and shrunken down before it is used, trees are growing very slowly and successively in boosting model. 
+</p>
+<p>For the result table generated under the Boosting model, the variable influence is different than before as the minority owned business is more influential than the community bank. To fairly compare the utility of decision tree, random forest, and boosting model and choose the best model for giving suggestions to policy makers, regulators, and ordinary borrowers, a summary table of RMSE value is created as follows. 
+</p>
+
+
+<br>
+<img class="center-fig" style="width:67%" src="https://zehuiwu.georgetown.domains/CSBS/Figures/Table11.jpeg">
+<p style="text-align:center">Table 11: Summary Table of RMSE </p><br>
+<p>The Summary table shows Root Mean Square Error of all three models. Since the test RMSE provides a better understanding of the model performance when unseen data (by the model) is fed into the model, it is a vital measure for prediction analysis of machine learning models. Clearly, Random Forest owns the lowest error, and would be the best model to choose. Therefore, it validates the importance of community bank and lender state among all variables to the amount approved by a bank. Policy makers can then focus more on giving more financial support to states with lower approval amounts and expand the business range of community banks.
+</p>
+
+<br>
+<section id="Results">
+        <h2>6. Results & Future Steps (Neural Networks): </h2>
+        <p>By doing hypothesis testing, it could be roughly suggested that no matter in rural or urban areas, and any level of income regions, both community and non-community banks might have a  large forgiveness amount. For most originating lender states, there is no obvious relationship between forgiveness amount level and whether the business is located in a rural or in an urban area. Similar results hold for lenders within a low to moderate- or a high-income area, but there are still some states that don't follow the same pattern. The PPP loan forgiveness amount of community banks in rural areas is higher than non-community banks, however, this pattern doesn't apply to urban areas.For regression analysis,  it could be concluded from the final models that banks with a high forgiveness ratio and employees ratio are more likely to have a high approval ratio. And community banks and urban banks are more likely to get a higher approval ratio, but state chartered banks are less likely to get a higher approval ratio. In addition, urban banks and banks with a higher employees ratio are less likely to obtain a higher forgiveness ratio. After comparing the RMSE value of Decision Tree, Random Forest, and Boosting Modeling, the prediction of Random Forest was proved to be the most accurate. It can be concluded that under the Random Forest, the community bank indeed plays a vital role in the financial power of a state. Under the decision tree, it is also shown that for urban areas of specific states, the approval amount is very high which can give regulators the reason that there are many people going to other states to borrow money. 
+    </p>
+    <p>Combined with the results of Machine Learning models of Random Forest, the relationship between forgiveness, approval, employment amount and the community banks as well as lender states are discovered. The Deep Learning method (Neural Networks) can be applied to increase the model prediction on performance of community banks. Neural Networks is an algorithm of analyzing multiple layers of variables and predictions are made depending on the weight of each layer. Moreover, since the influential variables are limited for the dataset provided, if more datasets or variables such as fraud count and credit card transactions in years are researched, Neural Networks can also be applied to find fraud detection and score the risks of lending money to a borrower for each community bank’s regulators; and therefore offer state policy makers a better understanding of the performance of community banks.  
+    </p>
+</section>
+
+<br>
+<section id="Conclusion">
+        <h2>7. Conclusion & Recommendations: </h2>
+        <p>a. Although some states, such as Virginia, Washington and West Virginia have a relatively large number of community banks, people in these states still prefer to go to other states to borrow money. Policymakers can therefore be suggested by analyzing the advantage of lender states’ policy of community banks  and setting up more financial support to solve the long distance borrowing problem. </p>
+        <p>b. Providing more programs on the federal, state, county and city levels which can support and foster minority business enterprises to grow, and can also mitigate the monopoly from large business. </p>
+        <p>c. Making more regulations and offering benefits to community banks to fill the gap between low approval amount and high approval amount and then balancing the distribution(Same for forgiveness amount).</p>
+        <p>d. Some insights can be given for policy makers that since the average ratio of forgiveness, employment, and approval rates might have some potential relationships with each other in one state, if a government would like to increase the capability of employment ratio, it can be suggested to increase the financial power first. However, this point needs to be argued before enacting any policies.</p>
+        
+</section>
+
+<br>
+
+<section id="Appendix">
+        <h2>Appendix: </h2>
+        All Codes/ Datasets/ Extra Plots are committed on Github: 
+    <a href="https://github.com/zw304/CSBS_Data_Analytics_Competition.git"><b> <i>https://github.com/zw304/CSBS_Data_Analytics_Competition.git </i></b></a>
+</section>
+
+
+<br>
+
+
+<section id="Reference">
+        <h2>Reference: </h2>
+        <p>[1] 	WebFOCUS 8 Technical Library</p>
+        <a href="https://infocenter.informationbuilders.com/wf80/index.jsp?topic=%2Fpubdocs%2FRStat16%2Fsource%2Ftopic49.htm"><b> <i>https://infocenter.informationbuilders.com/wf80/index.jsp?topic=%2Fpubdocs%2FRStat16%2Fsource%2Ftopic49.htm </i></b></a>
+
+<p>[2] 	Business Loan Program Temporary Changes; Paycheck Protection Program</p>
+
+<a href="https://www.federalregister.gov/documents/2020/04/15/2020-07672/business-loan-program-temporary-changes-paycheck-protection-program "><b> <i>https://www.federalregister.gov/documents/2020/04/15/2020-07672/business-loan-program-temporary-changes-paycheck-protection-program </i></b></a>
+
+<p>[3]    An Introduction to Statistical Learning(2nd Edition), Gareth James, page 352 , August 4th, 2021 
+</p>
+
+<p>[4]    Menard S. Applied Logistic Regression Analysis(2nd edition), SAGE Publications, Inc; 2001.
+</p>
+
+
+</section>
+
+    </div>
+
+</div>
+
+
+
+
+<script src="jquery-3.5.1.min.js"></script>
+<script>$(function () {
+    $(".headerpage-501").load("header.html");
+});</script>
+<script src="nav_scroll.js"></script>
+
+</body></html>
